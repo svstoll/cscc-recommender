@@ -1,0 +1,18 @@
+language: java
+
+jdk:
+- oraclejdk8
+
+cache:
+  directories:
+  - $HOME/.m2
+
+addons:
+  sonarcloud:
+    organization: "svstoll-github"
+    token:
+      secure: "FQN4XrR+0aMavNTTZTd5rDleA991umrkgPv9e7BFtxV5cy2rk+5HOCZRngs++BPdQ2Yp8FHGeBODCIMGhsiaYNTRpwzWyew/ZAgbXU8iwwbDt+cxLkrq/D+OkXjhYZ1BquTCp8ma6i2/sJX37rq1TNf5gXT3EeZs7P6T9e4hUnHqqaPzSKT1bEL1xLse3dQLLkpr/fCnk8auYhJfluSzkV5koASwNEL1NieVgsyitRbJAGYulaGbeF14sgPyzAX3JmQ0vVlvlXfcrWC/dlSatOdkfyekkJHrwwIA8d47xH8IXWTlaM7OKmyJEq0TYEPEYRo8TA4ais+LLzu7dLgY2SvFK8gr4lU6OnxZbzZU/H+hNCOE1uTykjdDz9lweuMqeRjtAA7br88xqVwKIaIzTnvHVIU0L9Hla0EFrAT23Vj1FTsm2OQJLD7y3wTYLdTn8HjuKAZ2B0iYRhEjcgjZcdQRANWzcXNFXKtIwuZmOHyPwC2QvmyglNjb9lWBeNmyb3Bmx66aCCTvTD9DHc/LSX0Vh0F3fE9TixPtRkKjft0RWQ7sGDCnQZmCIZYrNr/6FdYchM5sQhOFMDHoOMSjl2h/eqrqRrFQxI9PNgw9td3bDYxKtywIoiiCLwpmrS9qoHskG6lN58T30XlIHABODpjJPtD45rRiVBeE6XBPOEc="
+
+script:
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
+  - bash <(curl -s https://codecov.io/bash)

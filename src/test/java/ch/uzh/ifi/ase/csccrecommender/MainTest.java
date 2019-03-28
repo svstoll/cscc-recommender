@@ -12,4 +12,10 @@ public class MainTest {
   public void testNothing() {
     assertTrue(true);
   }
+
+  // TODO svstoll: Remove example later on.
+  @Test
+  public void testNothing2() {
+    // Test smell
+  }
 }

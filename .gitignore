@@ -67,3 +67,8 @@ fabric.properties
 
 # Ignore all log files
 .log
+
+# Ignore SonarLint files
+.idea/sonarlint.xml
+.idea/sonarlint-state.xml
+.idea/sonarlint

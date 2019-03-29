@@ -13,4 +13,9 @@ public class Main {
     Logger logger = LoggerFactory.getLogger(Main.class);
     logger.info("Recommender launched!");
   }
+
+  @Override
+  protected void finalize() throws Throwable {
+    // Should be detected by Sonar
+  }
 }

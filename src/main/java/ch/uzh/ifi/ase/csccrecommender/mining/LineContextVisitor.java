@@ -1,4 +1,4 @@
-package ch.uzh.ifi.ase.csccrecommender.index;
+package ch.uzh.ifi.ase.csccrecommender.mining;
 
 import cc.kave.commons.model.naming.codeelements.IMethodName;
 import cc.kave.commons.model.naming.codeelements.IParameterName;
@@ -14,9 +14,54 @@ import cc.kave.commons.model.ssts.expressions.simple.IReferenceExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.references.*;
 import cc.kave.commons.model.ssts.statements.*;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodCallDocumentBuilder;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodCallIndex;
+import com.github.tomtung.jsimhash.SimHashBuilder;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import org.apache.lucene.document.Document;
 
-@SuppressWarnings({"squid:S1185", "squid:S1135", "squid:CommentedOutCodeLine"})
+import static ch.uzh.ifi.ase.csccrecommender.utility.SstUtility.isValidToken;
+
+// TODO: Find a way to add missing token "this".
+@SuppressWarnings({"squid:S1185"})
+@Singleton
 public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContext, Void> {
+
+  private final MethodCallIndex index;
+
+  @Inject
+  public LineContextVisitor(MethodCallIndex index) {
+    this.index = index;
+  }
+
+  private void indexMethodCall(String methodCall, String type, CsccContext overallContext) {
+    if (!isValidToken(methodCall) || ! isValidToken(type)) {
+      return;
+    }
+
+    SimHashBuilder simHashBuilder = new SimHashBuilder();
+
+    String overallContextTokens = overallContext.getOverallContextTokens();
+    simHashBuilder.addStringFeature(overallContextTokens);
+    long overallContextSimHash = simHashBuilder.computeResult();
+
+    simHashBuilder.reset();
+
+    String lineContextTokens = overallContext.getLineContextTokens();
+    simHashBuilder.addStringFeature(lineContextTokens);
+    long lineContextSimHash = simHashBuilder.computeResult();
+
+    Document methodCallDocument = new MethodCallDocumentBuilder()
+        .withMethodCall(methodCall)
+        .withType(type)
+        .withOverallContext(overallContextTokens)
+        .withLineContext(lineContextTokens)
+        .withOverallContextSimHash(overallContextSimHash)
+        .withLineContextSimHash(lineContextSimHash)
+        .createDocument();
+    index.addDocument(methodCallDocument);
+  }
 
   @Override
   public Void visit(IVariableDeclaration stmt, LineContext context) {
@@ -28,7 +73,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IAssignment stmt, LineContext context) {
     stmt.getReference().accept(this, context);
-    // context.addToken(" = "); // TODO: Include this as a token?
+    context.addToken("="); // TODO: Include this as a token?
     stmt.getExpression().accept(this, context);
     return null;
   }
@@ -136,19 +181,22 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IInvocationExpression expr, LineContext context) {
     IMethodName methodName = expr.getMethodName();
+    String methodCall = methodName.getName();
+    String type = methodName.getDeclaringType().getFullName();
 
     if (methodName.isConstructor()) {
       context.addToken("new");
-      context.addToken(methodName.getDeclaringType().getName());
-      context.addInvocation(expr.getMethodName().getDeclaringType().getFullName(), methodName.getDeclaringType().getName());
+      indexMethodCall(methodCall, type, context.getOverallContext());
+      context.addToken(methodCall);
     } else {
       if (methodName.isStatic()) {
         context.addToken(methodName.getDeclaringType().getName());
       } else {
         expr.getReference().accept(this, context);
       }
-      context.addInvocation(expr.getMethodName().getDeclaringType().getFullName(), methodName.getName());
-      context.addToken(methodName.getName());
+
+      indexMethodCall(methodCall, type, context.getOverallContext());
+      context.addToken(methodCall);
     }
 
     for (ISimpleExpression parameter : expr.getParameters()) {
@@ -189,7 +237,10 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
 
   @Override
   public Void visit(IMethodReference methodRef, LineContext context) {
-    context.addInvocation(methodRef.getMethodName().getDeclaringType().getFullName(), methodRef.getMethodName().getName());
+    String methodCall = methodRef.getMethodName().getName();
+    String type = methodRef.getMethodName().getDeclaringType().getFullName();
+    indexMethodCall(methodCall, type, context.getOverallContext());
+
     context.addToken(methodRef.getMethodName().getName());
     return null;
   }

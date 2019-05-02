@@ -1,12 +1,29 @@
 package ch.uzh.ifi.ase.csccrecommender;
 
+import ch.uzh.ifi.ase.csccrecommender.properties.ConfigProperties;
 import com.google.inject.AbstractModule;
+import com.google.inject.name.Names;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 
 public class ProductionModule extends AbstractModule {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProductionModule.class);
+
   @Override
   protected void configure() {
-    // Add bindings for dependency injection here
-    // bind(Communicator.class).to(DefaultCommunicatorImpl.class); NOSONAR
+    bindConfigProperties();
+  }
+
+  protected void bindConfigProperties() {
+    try {
+      ConfigProperties properties = new ConfigProperties();
+      properties.load(getClass().getClassLoader().getResourceAsStream("config.properties"));
+      Names.bindProperties(binder(), properties);
+    } catch (IOException e) {
+      LOGGER.error("Error loading config properties.", e);
+    }
   }
 }

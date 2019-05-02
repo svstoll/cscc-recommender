@@ -1,18 +1,18 @@
-package ch.uzh.ifi.ase.csccrecommender.index;
+package ch.uzh.ifi.ase.csccrecommender.mining;
 
 import cc.kave.commons.model.ssts.blocks.*;
 import cc.kave.commons.model.ssts.declarations.*;
-import cc.kave.commons.model.ssts.expressions.assignable.*;
+import cc.kave.commons.model.ssts.expressions.assignable.ICompletionExpression;
+import cc.kave.commons.model.ssts.expressions.assignable.ILambdaExpression;
 import cc.kave.commons.model.ssts.expressions.loopheader.ILoopHeaderBlockExpression;
-import cc.kave.commons.model.ssts.expressions.simple.IConstantValueExpression;
-import cc.kave.commons.model.ssts.expressions.simple.INullExpression;
-import cc.kave.commons.model.ssts.expressions.simple.IReferenceExpression;
-import cc.kave.commons.model.ssts.expressions.simple.IUnknownExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
-import cc.kave.commons.model.ssts.references.*;
 import cc.kave.commons.model.ssts.statements.*;
+import cc.kave.commons.utils.ssts.SSTPrintingContext;
+import cc.kave.commons.utils.ssts.SSTPrintingVisitor;
+import com.google.inject.Singleton;
 
-@SuppressWarnings({"squid:S1185", "squid:S1135", "squid:CommentedOutCodeLine"})
+@SuppressWarnings({"squid:S1185"})
+@Singleton
 public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccContext, Void> {
 
   @Override
@@ -33,6 +33,16 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(IMethodDeclaration decl, CsccContext context) {
     context.clear();
+
+    // TODO: Remove this block after testing.
+    SSTPrintingContext printingContext = new SSTPrintingContext();
+    decl.accept(new SSTPrintingVisitor(), printingContext);
+    System.out.println();
+    System.out.println("-------------------------------------------------------------------------");
+    System.out.println(printingContext);
+    System.out.println("-------------------------------------------------------------------------");
+    System.out.println();
+
     visit(decl.getBody(), context);
     return null;
   }
@@ -49,12 +59,15 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(IVariableDeclaration stmt, CsccContext context) {
     context.addLineContext(stmt);
+    stmt.getReference().accept(this, context);
     return null;
   }
 
   @Override
   public Void visit(IAssignment stmt, CsccContext context) {
     context.addLineContext(stmt);
+    stmt.getReference().accept(this, context);
+    stmt.getExpression().accept(this, context);
     return null;
   }
 
@@ -73,12 +86,15 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(IEventSubscriptionStatement stmt, CsccContext context) {
     context.addLineContext(stmt);
+    stmt.getReference().accept(this, context);
+    stmt.getExpression().accept(this, context);
     return null;
   }
 
   @Override
   public Void visit(IExpressionStatement stmt, CsccContext context) {
     context.addLineContext(stmt);
+    stmt.getExpression().accept(this, context);
     return null;
   }
 
@@ -91,18 +107,21 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(ILabelledStatement stmt, CsccContext context) {
     context.addLineContext(stmt);
+    stmt.getStatement().accept(this, context);
     return null;
   }
 
   @Override
   public Void visit(IReturnStatement stmt, CsccContext context) {
     context.addLineContext(stmt);
+    stmt.getExpression().accept(this, context);
     return null;
   }
 
   @Override
   public Void visit(IThrowStatement stmt, CsccContext context) {
     context.addLineContext(stmt);
+    stmt.getReference().accept(this, context);
     return null;
   }
 
@@ -111,12 +130,16 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
     context.addLineContext(null, "do");
     visit(block.getBody(), context);
     context.addLineContext(block.getCondition(), "while");
+    block.getCondition().accept(this, context);
     return null;
   }
 
   @Override
   public Void visit(IForEachLoop block, CsccContext context) {
     context.addLineContext(block);
+    block.getDeclaration().accept(this, context);
+    block.getLoopedReference().accept(this, context);
+
     visit(block.getBody(), context);
     return null;
   }
@@ -124,6 +147,10 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(IForLoop block, CsccContext context) {
     context.addLineContext(block);
+    visit(block.getInit(), context);
+    block.getCondition().accept(this, context);
+    visit(block.getStep(), context);
+
     visit(block.getBody(), context);
     return null;
   }
@@ -131,6 +158,8 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(IIfElseBlock block, CsccContext context) {
     context.addLineContext(block.getCondition(), "if");
+    block.getCondition().accept(this, context);
+
     visit(block.getThen(), context);
     visit(block.getElse(), context);
     return null;
@@ -139,6 +168,8 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(ILockBlock stmt, CsccContext context) {
     context.addLineContext(stmt.getReference(), "lock");
+    stmt.getReference().accept(this, context);
+
     visit(stmt.getBody(), context);
     return null;
   }
@@ -146,9 +177,11 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(ISwitchBlock block, CsccContext context) {
     context.addLineContext(block.getReference(), "switch");
+    block.getReference().accept(this, context);
 
     for (ICaseBlock caseBlock : block.getSections()) {
       context.addLineContext(caseBlock.getLabel(), "case");
+      caseBlock.getLabel().accept(this, context);
       visit(caseBlock.getBody(), context);
     }
 
@@ -198,6 +231,7 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(IUsingBlock block, CsccContext context) {
     context.addLineContext(block.getReference(), "using");
+    block.getReference().accept(this, context);
     visit(block.getBody(), context);
     return null;
   }
@@ -205,6 +239,7 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(IWhileLoop block, CsccContext context) {
     context.addLineContext(block.getCondition(), "while");
+    block.getCondition().accept(this, context);
     visit(block.getBody(), context);
     return null;
   }
@@ -212,21 +247,6 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
   @Override
   public Void visit(ICompletionExpression entity, CsccContext context) {
     // TODO sst: Are these completion expressions present in the normal data set?
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public Void visit(IComposedExpression expr, CsccContext context) {
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public Void visit(IIfElseExpression expr, CsccContext context) {
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public Void visit(IInvocationExpression expr, CsccContext context) {
     throw new IllegalStateException();
   }
 
@@ -242,90 +262,4 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
     visit(expr.getBody(), context);
     return null;
   }
-
-  @Override
-  public Void visit(IConstantValueExpression expr, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(INullExpression expr, CsccContext context) {
-    return null;
-  }
-
-  @Override
-  public Void visit(IReferenceExpression expr, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(ICastExpression expr, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IIndexAccessExpression expr, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(ITypeCheckExpression expr, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IBinaryExpression expr, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IUnaryExpression expr, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IEventReference ref, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IFieldReference ref, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IMethodReference ref, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IPropertyReference ref, CsccContext context) {
-    throw new IllegalStateException("");
-  }
-
-  @Override
-  public Void visit(IVariableReference ref, CsccContext context) {
-    throw new IllegalStateException("No variable reference allowed here");
-  }
-
-  @Override
-  public Void visit(IIndexAccessReference ref, CsccContext context) {
-    throw new IllegalStateException("No index access reference allowed here");
-  }
-
-  @Override
-  public Void visit(IUnknownReference ref, CsccContext context) {
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public Void visit(IUnknownExpression unknownExpr, CsccContext context) {
-    throw new IllegalStateException();
-  }
-
-  @Override
-  public Void visit(IUnknownStatement unknownStmt, CsccContext context) {
-    return null;
-  }
 }
-

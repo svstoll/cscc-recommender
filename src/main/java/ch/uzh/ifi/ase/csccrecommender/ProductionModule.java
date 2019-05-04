@@ -20,7 +20,7 @@ public class ProductionModule extends AbstractModule {
   protected void bindConfigProperties() {
     try {
       ConfigProperties properties = new ConfigProperties();
-      properties.load(getClass().getClassLoader().getResourceAsStream("config.properties"));
+      properties.load(getClass().getClassLoader().getResourceAsStream(ConfigProperties.FILE_NAME));
       Names.bindProperties(binder(), properties);
     } catch (IOException e) {
       LOGGER.error("Error loading config properties.", e);

@@ -26,20 +26,8 @@ public class ContextExtractor {
   private final String miningDirectory;
 
   @Inject
-  public ContextExtractor(@Named(ConfigProperties.MINING_DIRECTORY_PROPERTY) String miningDirectory) {
+  protected ContextExtractor(@Named(ConfigProperties.MINING_DIRECTORY_PROPERTY) String miningDirectory) {
     this.miningDirectory = miningDirectory;
-  }
-
-  public List<Context> extractContextsFromZipFile(String zipFile) {
-    LinkedList<Context> contexts = Lists.newLinkedList();
-    try (IReadingArchive readingArchive = new ReadingArchive(new File(zipFile))) {
-      while (readingArchive.hasNext()) {
-        contexts.add(readingArchive.getNext(Context.class));
-      }
-    } catch (Exception e) {
-      LOGGER.error("Failed to extract context from ZIP File '{}'.", zipFile, e);
-    }
-    return contexts;
   }
 
   public List<Context> readAllContexts() {
@@ -63,5 +51,17 @@ public class ContextExtractor {
         .stream()
         .map(File::getAbsolutePath)
         .collect(Collectors.toList());
+  }
+
+  private List<Context> extractContextsFromZipFile(String zipFilePath) {
+    LinkedList<Context> contexts = Lists.newLinkedList();
+    try (IReadingArchive readingArchive = new ReadingArchive(new File(zipFilePath))) {
+      while (readingArchive.hasNext()) {
+        contexts.add(readingArchive.getNext(Context.class));
+      }
+    } catch (Exception e) {
+      LOGGER.error("Failed to extract context from ZIP File '{}'.", zipFilePath, e);
+    }
+    return contexts;
   }
 }

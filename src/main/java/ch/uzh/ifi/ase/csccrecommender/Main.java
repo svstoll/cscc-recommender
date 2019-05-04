@@ -1,43 +1,33 @@
 package ch.uzh.ifi.ase.csccrecommender;
 
-import cc.kave.commons.model.events.completionevents.Context;
-import ch.uzh.ifi.ase.csccrecommender.mining.ContextExtractor;
-import ch.uzh.ifi.ase.csccrecommender.mining.CsccContext;
-import ch.uzh.ifi.ase.csccrecommender.mining.IndexCreatorVisitor;
-import ch.uzh.ifi.ase.csccrecommender.index.MethodCallDocumentBuilder;
-import ch.uzh.ifi.ase.csccrecommender.index.MethodCallIndex;
+import cc.kave.commons.model.events.completionevents.CompletionEvent;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodCallIndexer;
+import ch.uzh.ifi.ase.csccrecommender.mining.CompletionEventExtractor;
+import ch.uzh.ifi.ase.csccrecommender.recommender.CsccRecommender;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
 
   public static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
-  public static void main(String[] args) throws IOException {
-    LOGGER.info("Recommender launched!");
+  public static void main(String[] args) {
     Injector injector = Guice.createInjector(new ProductionModule());
+    MethodCallIndexer methodCallIndexer = injector.getInstance(MethodCallIndexer.class);
+    CompletionEventExtractor completionEventExtractor = injector.getInstance(
+        CompletionEventExtractor.class);
+    CsccRecommender csccRecommender = injector.getInstance(CsccRecommender.class);
+    LOGGER.info("CSCC Recommender launched.");
 
-    // TODO: Refactor index creation.
-    MethodCallIndex index = injector.getInstance(MethodCallIndex.class);
-    index.clearIndex();
+    methodCallIndexer.indexData(true);
 
-    CsccContext csccContext = injector.getInstance(CsccContext.class);
-    ContextExtractor contextExtractor = injector.getInstance(ContextExtractor.class);
-    List<Context> contexts = contextExtractor.readAllContexts();
-    contexts.forEach(context -> context.getSST().accept(new IndexCreatorVisitor(), csccContext));
-
-    index.indexDocuments();
-
-    // TODO: Example index search. Remove again.
-    List<String> tokens = new ArrayList<>();
-    tokens.add("string");
-    index.retrieveMethodCalls("string", tokens)
-        .forEach(document -> LOGGER.info(document.get(MethodCallDocumentBuilder.METHOD_CALL_FIELD)));
+    List<CompletionEvent> completionEvents = completionEventExtractor.readAllEvents();
+    for (CompletionEvent completionEvent : completionEvents) {
+      csccRecommender.recommendMethods(completionEvent);
+    }
   }
 }

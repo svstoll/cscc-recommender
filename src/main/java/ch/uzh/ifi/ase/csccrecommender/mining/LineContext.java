@@ -9,16 +9,16 @@ import static ch.uzh.ifi.ase.csccrecommender.utility.SstUtility.isValidToken;
 
 public class LineContext {
 
-  private final CsccContext overallContext;
+  private final CsccContext csccContext;
   private final List<String> tokens = new ArrayList<>();
   private ISSTNode node;
 
-  public LineContext(CsccContext overallContext) {
-    this.overallContext = overallContext;
+  public LineContext(CsccContext csccContext) {
+    this.csccContext = csccContext;
   }
 
-  public CsccContext getOverallContext() {
-    return overallContext;
+  public CsccContext getCsccContext() {
+    return csccContext;
   }
 
   public ISSTNode getNode() {

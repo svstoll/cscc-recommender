@@ -1,7 +1,7 @@
 package ch.uzh.ifi.ase.csccrecommender.mining;
 
 import cc.kave.commons.model.ssts.visitor.ISSTNode;
-import com.google.inject.Inject;
+import ch.uzh.ifi.ase.csccrecommender.utility.CollectionUtility;
 
 import java.util.*;
 
@@ -12,7 +12,6 @@ public class CsccContext {
 
   private LineContext mostRecentLineContext = null;
 
-  @Inject
   public CsccContext(LineContextVisitor lineContextVisitor) {
     this.lineContextVisitor = lineContextVisitor;
   }
@@ -35,34 +34,17 @@ public class CsccContext {
     }
   }
 
-  public String getOverallContextTokens() {
-    Set<String> seenTokens = new HashSet<>();
-    StringBuilder tokens = new StringBuilder();
+  public List<String> getOverallContextTokens() {
+    List<String> overallContext = new ArrayList<>();
     for (LineContext lineContext : lineContexts) {
-      appendNoneDuplicateTokens(seenTokens, tokens, lineContext);
+      overallContext.addAll(lineContext.getTokens());
     }
-    return tokens.toString();
+
+    return CollectionUtility.removeDuplicates(overallContext);
   }
 
-  public String getLineContextTokens() {
-    Set<String> seenTokens = new HashSet<>();
-    StringBuilder tokens = new StringBuilder();
-    appendNoneDuplicateTokens(seenTokens, tokens, mostRecentLineContext);
-    return tokens.toString();
-  }
-
-  private void appendNoneDuplicateTokens(Set<String> seenTokens, StringBuilder tokens, LineContext lineContext) {
-    for (String token : lineContext.getTokens()) {
-      if (!seenTokens.contains(token)) {
-        seenTokens.add(token);
-        tokens.append(token);
-        tokens.append(" ");
-      }
-    }
-  }
-
-  public Collection<LineContext> getLineContexts() {
-    return lineContexts;
+  public List<String> getLineContextTokens() {
+    return CollectionUtility.removeDuplicates(mostRecentLineContext.getTokens());
   }
 
   public void clear() {

@@ -24,47 +24,52 @@ public class MethodCallIndex {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodCallIndex.class);
 
   private final String indexDirectoryPath;
-  private final List<Document> unindexedDocuments = new ArrayList<>();
+  private final List<Document> cachedDocuments = new ArrayList<>();
 
   @Inject
-  public MethodCallIndex(@Named(ConfigProperties.INDEX_DIRECTORY_PROPERTY) String indexDirectoryPath) {
+  protected MethodCallIndex(@Named(ConfigProperties.INDEX_DIRECTORY_PROPERTY) String indexDirectoryPath) {
     this.indexDirectoryPath = indexDirectoryPath;
   }
 
-  public void clearIndex() throws IOException {
+  public void clearIndex() {
     StandardAnalyzer analyzer = new StandardAnalyzer();
     IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
-    Directory indexDirectory = FSDirectory.open(Paths.get(this.indexDirectoryPath));
 
-    try (IndexWriter indexWriter = new IndexWriter(indexDirectory, indexWriterConfig)) {
+    try (Directory indexDirectory = FSDirectory.open(Paths.get(this.indexDirectoryPath));
+        IndexWriter indexWriter = new IndexWriter(indexDirectory, indexWriterConfig)) {
       indexWriter.deleteAll();
       indexWriter.commit();
+      LOGGER.info("Index cleared.");
+    }
+    catch (IOException exception) {
+      LOGGER.error("Error clearing method call index.", exception);
     }
   }
 
-  public void addDocument(Document document) {
-    unindexedDocuments.add(document);
+  public void addDocumentToCache(Document document) {
+    cachedDocuments.add(document);
   }
 
-  public void indexDocuments() {
+  public void indexCachedDocuments() {
     StandardAnalyzer analyzer = new StandardAnalyzer();
     IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
 
     try (Directory indexDirectory = FSDirectory.open(Paths.get(this.indexDirectoryPath));
          IndexWriter indexWriter = new IndexWriter(indexDirectory, indexWriterConfig)) {
 
-      for (Document document : unindexedDocuments) {
+      for (Document document : cachedDocuments) {
         indexWriter.addDocument(document);
       }
-      unindexedDocuments.clear();
+      cachedDocuments.clear();
       indexWriter.commit();
+      LOGGER.info("Indexed cached documents.");
     }
     catch (IOException exception) {
-      LOGGER.error("Could not index document.", exception);
+      LOGGER.error("Error indexing cached documents.", exception);
     }
   }
 
-  public List<Document> retrieveMethodCalls(String type, List<String> tokens) throws IOException {
+  public List<Document> searchMethodCallDocuments(String type, List<String> tokens) {
     Query typeQuery = new TermQuery(new Term(MethodCallDocumentBuilder.TYPE_FIELD, type));
     BooleanQuery.Builder contextQueryBuilder = new BooleanQuery.Builder();
     for (String token : tokens) {
@@ -78,15 +83,20 @@ public class MethodCallIndex {
         .add(contextQuery, BooleanClause.Occur.MUST)
         .build();
 
-    Directory indexDirectory = FSDirectory.open(Paths.get(this.indexDirectoryPath));
-    IndexReader indexReader = DirectoryReader.open(indexDirectory);
-    IndexSearcher searcher = new IndexSearcher(indexReader);
-    TopDocs topDocs = searcher.search(query, 200);
-
     List<Document> documents = new ArrayList<>();
-    for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
-      documents.add(searcher.doc(scoreDoc.doc));
+    try (Directory indexDirectory = FSDirectory.open(Paths.get(this.indexDirectoryPath));
+         IndexReader indexReader = DirectoryReader.open(indexDirectory)) {
+        IndexSearcher searcher = new IndexSearcher(indexReader);
+        TopDocs topDocs = searcher.search(query, 200);
+
+        for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
+          documents.add(searcher.doc(scoreDoc.doc));
+        }
     }
+    catch (IOException exception) {
+      LOGGER.error("Error searching index for method call documents.", exception);
+    }
+
     return documents;
   }
 }

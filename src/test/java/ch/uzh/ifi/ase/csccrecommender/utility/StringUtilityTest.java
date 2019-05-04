@@ -8,19 +8,16 @@ public class StringUtilityTest {
 
   @Test
   public void isNullOrEmpty_givenNullString_shouldReturnTrue() {
-    boolean actual = StringUtility.isNullOrEmpty(null);
-    assertTrue(actual);
+    assertTrue(StringUtility.isNullOrEmpty(null));
   }
 
   @Test
   public void isNullOrEmpty_givenEmptyString_shouldReturnTrue() {
-    boolean actual = StringUtility.isNullOrEmpty("");
-    assertTrue(actual);
+    assertTrue(StringUtility.isNullOrEmpty(""));
   }
 
   @Test
   public void isNullOrEmpty_givenNonEmptyString_shouldReturnFalse() {
-    boolean actual = StringUtility.isNullOrEmpty("foo");
-    assertFalse(actual);
+    assertFalse(StringUtility.isNullOrEmpty("foo"));
   }
 }

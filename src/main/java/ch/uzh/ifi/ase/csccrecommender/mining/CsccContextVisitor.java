@@ -13,7 +13,7 @@ import com.google.inject.Singleton;
 
 @SuppressWarnings({"squid:S1185"})
 @Singleton
-public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccContext, Void> {
+public class CsccContextVisitor extends AbstractTraversingNodeVisitor<CsccContext, Void> {
 
   @Override
   public Void visit(IDelegateDeclaration stmt, CsccContext context) {
@@ -246,8 +246,10 @@ public class IndexCreatorVisitor extends AbstractTraversingNodeVisitor<CsccConte
 
   @Override
   public Void visit(ICompletionExpression entity, CsccContext context) {
-    // TODO sst: Are these completion expressions present in the normal data set?
-    throw new IllegalStateException();
+    if (entity.getVariableReference() != null) {
+      entity.getVariableReference().accept(this, context);
+    }
+    return null;
   }
 
   @Override

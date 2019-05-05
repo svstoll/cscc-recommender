@@ -18,7 +18,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// TODO: Make extraction more robust. Log errors better.
+// TODO: Make extraction more robust.
 public class ContextExtractor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ContextExtractor.class);
@@ -30,16 +30,22 @@ public class ContextExtractor {
     this.miningDirectory = miningDirectory;
   }
 
-  public List<Context> readAllContexts() {
+  public void processAllContexts(ContextExtractionConsumer contextExtractionConsumer) {
     if (StringUtility.isNullOrEmpty(miningDirectory)) {
-      return Collections.emptyList();
+      return;
     }
 
-    LinkedList<Context> contexts = Lists.newLinkedList();
-    for (String zip : findAllZipFilePaths(miningDirectory)) {
-      contexts.addAll(extractContextsFromZipFile(zip));
+    for (String zipFilePath : findAllZipFilePaths(miningDirectory)) {
+      // TODO: Could run extraction multiple threads. Index writing might be the bottleneck, but
+      //  maybe we can also leave the indexWriter open to improve performance.
+      LOGGER.info("Extracting contexts from '{}'.", zipFilePath);
+      long start = System.currentTimeMillis();
+      List<Context> contexts = extractContextsFromZipFile(zipFilePath);
+      long end = System.currentTimeMillis();
+      LOGGER.info("Extraction took {} ms.", end - start);
+
+      contextExtractionConsumer.consume(contexts);
     }
-    return contexts;
   }
 
   private List<String> findAllZipFilePaths(String directoryPath) {

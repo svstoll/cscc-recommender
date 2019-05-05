@@ -9,24 +9,24 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MethodCallIndexer {
+public class MethodInvocationIndexer {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MethodCallIndexer.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MethodInvocationIndexer.class);
 
-  private final MethodCallIndex methodCallIndex;
+  private final MethodInvocationIndex methodInvocationIndex;
   private final ContextExtractor contextExtractor;
 
   @Inject
-  protected MethodCallIndexer(MethodCallIndex methodCallIndex,
-                              ContextExtractor contextExtractor) {
-    this.methodCallIndex = methodCallIndex;
+  protected MethodInvocationIndexer(MethodInvocationIndex methodInvocationIndex,
+                                    ContextExtractor contextExtractor) {
+    this.methodInvocationIndex = methodInvocationIndex;
     this.contextExtractor = contextExtractor;
   }
 
-  public void indexData(boolean resetIndex) {
+  public void indexAllAvailableContexts(boolean resetIndex) {
     LOGGER.info("Start indexing.");
     if (resetIndex) {
-      methodCallIndex.clearIndex();
+      methodInvocationIndex.clearIndex();
     }
 
     contextExtractor.processAllContexts(contexts -> {
@@ -38,7 +38,7 @@ public class MethodCallIndexer {
       long end = System.currentTimeMillis();
       LOGGER.info("SST traversals with document creation took {} ms.", end - start);
 
-      methodCallIndex.indexDocuments(indexingLineContextVisitor.getCachedDocuments());
+      methodInvocationIndex.indexDocuments(indexingLineContextVisitor.getCachedDocuments());
     });
 
     LOGGER.info("Indexing finished.");

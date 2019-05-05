@@ -1,6 +1,6 @@
 package ch.uzh.ifi.ase.csccrecommender.mining;
 
-import ch.uzh.ifi.ase.csccrecommender.index.MethodCallDocumentBuilder;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationDocumentBuilder;
 import ch.uzh.ifi.ase.csccrecommender.utility.CollectionUtility;
 import com.github.tomtung.jsimhash.SimHashBuilder;
 import org.apache.lucene.document.Document;
@@ -34,8 +34,8 @@ public class IndexingLineContextVisitor extends LineContextVisitor {
     simHashBuilder.addStringFeature(lineContextTokens);
     long lineContextSimHash = simHashBuilder.computeResult();
 
-    Document methodCallDocument = new MethodCallDocumentBuilder()
-        .withMethodCall(methodName)
+    Document methodCallDocument = new MethodInvocationDocumentBuilder()
+        .withMethodName(methodName)
         .withType(invocationType)
         .withOverallContext(overallContextTokens)
         .withLineContext(lineContextTokens)

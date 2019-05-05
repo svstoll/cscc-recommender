@@ -20,6 +20,13 @@ public class IndexingLineContextVisitor extends LineContextVisitor {
       return;
     }
 
+    // TODO: Remove this block after testing (or log with debug).
+    System.out.println("Method name: " + methodName);
+    System.out.println("Type: " + invocationType);
+    System.out.println("Overall tokens: " + csccContext.getOverallContextTokens());
+    System.out.println("Line tokens: " + csccContext.getLineContextTokens());
+    System.out.println();
+
     SimHashBuilder simHashBuilder = new SimHashBuilder();
 
     String overallContextTokens = CollectionUtility.concatenateStrings(

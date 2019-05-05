@@ -16,11 +16,14 @@ import cc.kave.commons.model.ssts.references.*;
 import cc.kave.commons.model.ssts.statements.*;
 import com.google.inject.Singleton;
 
-// TODO: Find a way to add missing token "this".
+// TODO: - Handle invocations without tokens --> index with special identifier?
+//       - Add NULL token
+//       - Add true, falls tokens
 @SuppressWarnings({"squid:S1185"})
 @Singleton
 public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContext, Void> {
 
+  // TODO:
   @Override
   public Void visit(ICompletionExpression entity, LineContext context) {
     if (entity.getVariableReference() != null) {
@@ -139,7 +142,6 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
     for (IReference reference : expr.getReferences()) {
       reference.accept(this, context);
     }
-
     return null;
   }
 
@@ -156,13 +158,12 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IInvocationExpression expr, LineContext context) {
     IMethodName methodName = expr.getMethodName();
-    String simpleMethodName = methodName.getName();
     String type = methodName.getDeclaringType().getFullName();
 
     if (methodName.isConstructor()) {
       context.addToken("new");
-      handleMethodInvocation(simpleMethodName, type, context.getCsccContext());
-      context.addToken(simpleMethodName);
+      handleMethodInvocation(methodName.getName(), type, context.getCsccContext());
+      context.addToken(methodName.getDeclaringType().getName());
     } else {
       if (methodName.isStatic()) {
         context.addToken(methodName.getDeclaringType().getName());
@@ -170,8 +171,8 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
         expr.getReference().accept(this, context);
       }
 
-      handleMethodInvocation(simpleMethodName, type, context.getCsccContext());
-      context.addToken(simpleMethodName);
+      handleMethodInvocation(methodName.getName(), type, context.getCsccContext());
+      context.addToken(methodName.getName());
     }
 
     for (ISimpleExpression parameter : expr.getParameters()) {

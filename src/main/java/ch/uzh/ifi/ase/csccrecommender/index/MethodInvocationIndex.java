@@ -19,14 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Singleton
-public class MethodCallIndex {
+public class MethodInvocationIndex {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MethodCallIndex.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MethodInvocationIndex.class);
 
   private final String indexDirectoryPath;
 
   @Inject
-  protected MethodCallIndex(@Named(ConfigProperties.INDEX_DIRECTORY_PROPERTY) String indexDirectoryPath) {
+  protected MethodInvocationIndex(@Named(ConfigProperties.INDEX_DIRECTORY_PROPERTY) String indexDirectoryPath) {
     this.indexDirectoryPath = indexDirectoryPath;
   }
 
@@ -66,11 +66,11 @@ public class MethodCallIndex {
     }
   }
 
-  public List<Document> searchMethodCallDocuments(String type, List<String> tokens) {
-    Query typeQuery = new TermQuery(new Term(MethodCallDocumentBuilder.TYPE_FIELD, type));
+  public List<Document> searchMethodInvocationDocuments(String type, List<String> tokens) {
+    Query typeQuery = new TermQuery(new Term(MethodInvocationDocumentBuilder.TYPE_FIELD, type));
     BooleanQuery.Builder contextQueryBuilder = new BooleanQuery.Builder();
     for (String token : tokens) {
-      Query tokenQuery = new TermQuery(new Term(MethodCallDocumentBuilder.OVERALL_CONTEXT_FIELD, token));
+      Query tokenQuery = new TermQuery(new Term(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_FIELD, token));
       contextQueryBuilder.add(tokenQuery, BooleanClause.Occur.SHOULD);
     }
     Query contextQuery = contextQueryBuilder.build();

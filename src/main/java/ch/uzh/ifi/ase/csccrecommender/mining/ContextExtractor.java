@@ -26,7 +26,7 @@ public class ContextExtractor {
   private final String miningDirectory;
 
   @Inject
-  protected ContextExtractor(@Named(ConfigProperties.MINING_DIRECTORY_PROPERTY) String miningDirectory) {
+  protected ContextExtractor(@Named(ConfigProperties.CONTEXTS_DIRECTORY_PROPERTY) String miningDirectory) {
     this.miningDirectory = miningDirectory;
   }
 

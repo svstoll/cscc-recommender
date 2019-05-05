@@ -1,6 +1,6 @@
 package ch.uzh.ifi.ase.csccrecommender.recommender;
 
-import ch.uzh.ifi.ase.csccrecommender.index.MethodCallDocumentBuilder;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationDocumentBuilder;
 import com.github.tomtung.jsimhash.Util;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.commons.text.similarity.LongestCommonSubsequence;
@@ -16,8 +16,8 @@ public class DocumentComparison {
 
   public DocumentComparison(Document document, long overallContextSimHashForProposal, long lineContextSimHashForProposal) {
     this.document = document;
-    long overallContextSimHash = (long) document.getField(MethodCallDocumentBuilder.OVERALL_CONTEXT_SIM_HASH_FIELD).numericValue();
-    long lineContextSimHash = (long) document.getField(MethodCallDocumentBuilder.LINE_CONTEXT_SIM_HASH_FIELD).numericValue();
+    long overallContextSimHash = (long) document.getField(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_SIM_HASH_FIELD).numericValue();
+    long lineContextSimHash = (long) document.getField(MethodInvocationDocumentBuilder.LINE_CONTEXT_SIM_HASH_FIELD).numericValue();
     this.overallContextHammingDistance = Util.hammingDistance(overallContextSimHash, overallContextSimHashForProposal);
     this.lineContextHammingDistance = Util.hammingDistance(lineContextSimHash, lineContextSimHashForProposal);
   }
@@ -28,7 +28,8 @@ public class DocumentComparison {
     }
 
     LongestCommonSubsequence longestCommonSubsequence = new LongestCommonSubsequence();
-    overallContextLcsDistance = longestCommonSubsequence.apply(document.get(MethodCallDocumentBuilder.OVERALL_CONTEXT_FIELD),
+    overallContextLcsDistance = longestCommonSubsequence.apply(document.get(
+        MethodInvocationDocumentBuilder.OVERALL_CONTEXT_FIELD),
         overallContextForProposal);
     return overallContextLcsDistance;
   }
@@ -40,7 +41,7 @@ public class DocumentComparison {
 
     LevenshteinDistance levenshteinDistance = LevenshteinDistance.getDefaultInstance();
     lineContextLevenshteinDistance = levenshteinDistance.apply(
-        document.get(MethodCallDocumentBuilder.OVERALL_CONTEXT_FIELD),
+        document.get(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_FIELD),
         overallContextForProposal);
     return lineContextLevenshteinDistance;
   }

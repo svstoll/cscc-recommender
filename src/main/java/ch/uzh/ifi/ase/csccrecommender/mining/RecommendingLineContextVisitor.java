@@ -1,7 +1,7 @@
 package ch.uzh.ifi.ase.csccrecommender.mining;
 
-import ch.uzh.ifi.ase.csccrecommender.index.MethodCallDocumentBuilder;
-import ch.uzh.ifi.ase.csccrecommender.index.MethodCallIndex;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationDocumentBuilder;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationIndex;
 import ch.uzh.ifi.ase.csccrecommender.recommender.DocumentComparison;
 import ch.uzh.ifi.ase.csccrecommender.utility.CollectionUtility;
 import com.github.tomtung.jsimhash.SimHashBuilder;
@@ -18,12 +18,12 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
   private static final int MAX_RECOMMENDATIONS = 3;
   private static final int MAX_REFINED_CANDIDATES = 200;
 
-  private final MethodCallIndex methodCallIndex;
+  private final MethodInvocationIndex methodInvocationIndex;
   private final List<String> recommendations = new ArrayList<>();
 
   @Inject
-  protected RecommendingLineContextVisitor(MethodCallIndex methodCallIndex) {
-    this.methodCallIndex = methodCallIndex;
+  protected RecommendingLineContextVisitor(MethodInvocationIndex methodInvocationIndex) {
+    this.methodInvocationIndex = methodInvocationIndex;
   }
 
   @Override
@@ -33,7 +33,7 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
     String overallContextConcatenated = CollectionUtility.concatenateStrings(overallContextTokens, " ");
     String lineContextConcatenated = CollectionUtility.concatenateStrings(lineContextTokens, " ");
 
-    List<Document> documents = methodCallIndex.searchMethodCallDocuments(invocationType, overallContextTokens);
+    List<Document> documents = methodInvocationIndex.searchMethodInvocationDocuments(invocationType, overallContextTokens);
 
     SimHashBuilder simHashBuilder = new SimHashBuilder();
     simHashBuilder.addStringFeature(overallContextConcatenated);
@@ -53,9 +53,9 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
     rankRecommendations(comparisons, overallContextConcatenated, lineContextConcatenated);
   }
 
-  private void rankRecommendations(List<DocumentComparison> comparisons, String overallContextConcatenated, String lineContextConcatenated) {
+  private void rankRecommendations(List<DocumentComparison> comparisons, String overallContext, String lineContext) {
     recommendations.clear();
-    // TODO: Include Hamming distance from line context in sorting logic.
+    // TODO: Include Hamming distance from line context in sorting logic (unclear from paper description).
     comparisons.sort(Comparator.comparingLong(DocumentComparison::getOverallContextHammingDistance));
 
     int refinedToIndex = comparisons.size() > MAX_REFINED_CANDIDATES ?
@@ -64,8 +64,8 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
     List<DocumentComparison> refinedCandidates = comparisons.subList(0, refinedToIndex);
 
     refinedCandidates.sort(Comparator.comparingInt((DocumentComparison comparison) ->
-        comparison.compareOverallContexts(overallContextConcatenated))
-        .thenComparingInt(comparison -> comparison.compareLineContexts(lineContextConcatenated)));
+        comparison.compareOverallContexts(overallContext))
+        .thenComparingInt(comparison -> comparison.compareLineContexts(lineContext)));
 
     int k = 0;
     HashSet<String> includedMethods = new HashSet<>();
@@ -73,7 +73,7 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
       if (k >= MAX_RECOMMENDATIONS) {
         break;
       }
-      String recommendation = comparison.getDocument().get(MethodCallDocumentBuilder.METHOD_CALL_FIELD);
+      String recommendation = comparison.getDocument().get(MethodInvocationDocumentBuilder.METHOD_NAME_FIELD);
       if (!includedMethods.contains(recommendation)) {
         recommendations.add(recommendation);
         includedMethods.add(recommendation);

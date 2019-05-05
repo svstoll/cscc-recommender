@@ -9,8 +9,6 @@ import com.google.inject.Injector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 public class Main {
 
   public static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
@@ -25,9 +23,10 @@ public class Main {
 
     methodCallIndexer.indexData(true);
 
-    List<CompletionEvent> completionEvents = completionEventExtractor.readAllEvents();
-    for (CompletionEvent completionEvent : completionEvents) {
-      csccRecommender.recommendMethods(completionEvent);
-    }
+    completionEventExtractor.processAllCompletionEvents(completionEvents -> {
+      for (CompletionEvent completionEvent : completionEvents) {
+        csccRecommender.recommendMethods(completionEvent);
+      }
+    });
   }
 }

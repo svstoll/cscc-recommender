@@ -1,26 +1,22 @@
 package ch.uzh.ifi.ase.csccrecommender.mining;
 
 import ch.uzh.ifi.ase.csccrecommender.index.MethodCallDocumentBuilder;
-import ch.uzh.ifi.ase.csccrecommender.index.MethodCallIndex;
 import ch.uzh.ifi.ase.csccrecommender.utility.CollectionUtility;
 import com.github.tomtung.jsimhash.SimHashBuilder;
-import com.google.inject.Inject;
 import org.apache.lucene.document.Document;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static ch.uzh.ifi.ase.csccrecommender.utility.SstUtility.isValidToken;
 
 public class IndexingLineContextVisitor extends LineContextVisitor {
 
-  private final MethodCallIndex methodCallIndex;
-
-  @Inject
-  protected IndexingLineContextVisitor(MethodCallIndex methodCallIndex) {
-    this.methodCallIndex = methodCallIndex;
-  }
+  private final List<Document> cachedDocuments = new ArrayList<>();
 
   @Override
-  protected void performMethodInvocationAction(String methodCall, String invocationType, CsccContext csccContext) {
-    if (!isValidToken(methodCall) || ! isValidToken(invocationType)) {
+  protected void handleMethodInvocation(String methodName, String invocationType, CsccContext csccContext) {
+    if (!isValidToken(methodName) || ! isValidToken(invocationType)) {
       return;
     }
 
@@ -39,13 +35,17 @@ public class IndexingLineContextVisitor extends LineContextVisitor {
     long lineContextSimHash = simHashBuilder.computeResult();
 
     Document methodCallDocument = new MethodCallDocumentBuilder()
-        .withMethodCall(methodCall)
+        .withMethodCall(methodName)
         .withType(invocationType)
         .withOverallContext(overallContextTokens)
         .withLineContext(lineContextTokens)
         .withOverallContextSimHash(overallContextSimHash)
         .withLineContextSimHash(lineContextSimHash)
         .createDocument();
-    methodCallIndex.addDocumentToCache(methodCallDocument);
+    cachedDocuments.add(methodCallDocument);
+  }
+
+  public List<Document> getCachedDocuments() {
+    return cachedDocuments;
   }
 }

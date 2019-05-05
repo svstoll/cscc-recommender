@@ -1,6 +1,7 @@
 package ch.uzh.ifi.ase.csccrecommender.recommender;
 
 import cc.kave.commons.model.events.completionevents.CompletionEvent;
+import cc.kave.commons.model.naming.codeelements.IMethodName;
 import ch.uzh.ifi.ase.csccrecommender.mining.CsccContext;
 import ch.uzh.ifi.ase.csccrecommender.mining.CsccContextVisitor;
 import ch.uzh.ifi.ase.csccrecommender.mining.RecommendingLineContextVisitor;
@@ -22,7 +23,7 @@ public class CsccRecommender {
   // TODO: Adapt output.
   public void recommendMethods(CompletionEvent completionEvent) {
     completionEvent.getContext().getSST().accept(new CsccContextVisitor(), new CsccContext(recommendingLineContextVisitor));
-    LOGGER.info("Actually selected proposal: {}", (completionEvent.getLastSelectedProposal().getName()).getIdentifier());
+    LOGGER.info("Actually selected proposal: {}", ((IMethodName) completionEvent.getLastSelectedProposal().getName()).getFullName());
     LOGGER.info("CSCC Recommendations: {}", recommendingLineContextVisitor.getRecommendations());
   }
 }

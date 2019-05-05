@@ -24,7 +24,6 @@ public class MethodCallIndex {
   private static final Logger LOGGER = LoggerFactory.getLogger(MethodCallIndex.class);
 
   private final String indexDirectoryPath;
-  private final List<Document> cachedDocuments = new ArrayList<>();
 
   @Inject
   protected MethodCallIndex(@Named(ConfigProperties.INDEX_DIRECTORY_PROPERTY) String indexDirectoryPath) {
@@ -46,23 +45,21 @@ public class MethodCallIndex {
     }
   }
 
-  public void addDocumentToCache(Document document) {
-    cachedDocuments.add(document);
-  }
+  public void indexDocuments(List<Document> documents) {
+    long start = System.currentTimeMillis();
 
-  public void indexCachedDocuments() {
     StandardAnalyzer analyzer = new StandardAnalyzer();
     IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
 
     try (Directory indexDirectory = FSDirectory.open(Paths.get(this.indexDirectoryPath));
          IndexWriter indexWriter = new IndexWriter(indexDirectory, indexWriterConfig)) {
-
-      for (Document document : cachedDocuments) {
+      for (Document document : documents) {
         indexWriter.addDocument(document);
       }
-      cachedDocuments.clear();
       indexWriter.commit();
-      LOGGER.info("Indexed cached documents.");
+
+      long end = System.currentTimeMillis();
+      LOGGER.info("Indexing {} documents took {} ms.", documents.size(), end - start);
     }
     catch (IOException exception) {
       LOGGER.error("Error indexing cached documents.", exception);

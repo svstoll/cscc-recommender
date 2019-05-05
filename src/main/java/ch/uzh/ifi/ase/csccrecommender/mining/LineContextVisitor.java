@@ -23,13 +23,18 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
 
   @Override
   public Void visit(ICompletionExpression entity, LineContext context) {
+    if (entity.getVariableReference() != null) {
+      entity.getVariableReference().accept(this, context);
+    }
+
+    // TODO: What does it imply if type reference is null?
     if (entity.getTypeReference() != null) {
-      performCompletionExpressionAction(entity.getTypeReference().getFullName(), context.getCsccContext());
+      handleCompletionExpression(entity.getTypeReference().getFullName(), context.getCsccContext());
     }
     return null;
   }
 
-  protected void performCompletionExpressionAction(String invocationType, CsccContext csccContext) {
+  protected void handleCompletionExpression(String invocationType, CsccContext csccContext) {
     // NOP
   }
 
@@ -43,7 +48,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IAssignment stmt, LineContext context) {
     stmt.getReference().accept(this, context);
-    context.addToken("="); // TODO: Include this as a token?
+    context.addToken("=");
     stmt.getExpression().accept(this, context);
     return null;
   }
@@ -151,13 +156,13 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IInvocationExpression expr, LineContext context) {
     IMethodName methodName = expr.getMethodName();
-    String methodCall = methodName.getName();
+    String simpleMethodName = methodName.getName();
     String type = methodName.getDeclaringType().getFullName();
 
     if (methodName.isConstructor()) {
       context.addToken("new");
-      performMethodInvocationAction(methodCall, type, context.getCsccContext());
-      context.addToken(methodCall);
+      handleMethodInvocation(simpleMethodName, type, context.getCsccContext());
+      context.addToken(simpleMethodName);
     } else {
       if (methodName.isStatic()) {
         context.addToken(methodName.getDeclaringType().getName());
@@ -165,8 +170,8 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
         expr.getReference().accept(this, context);
       }
 
-      performMethodInvocationAction(methodCall, type, context.getCsccContext());
-      context.addToken(methodCall);
+      handleMethodInvocation(simpleMethodName, type, context.getCsccContext());
+      context.addToken(simpleMethodName);
     }
 
     for (ISimpleExpression parameter : expr.getParameters()) {
@@ -176,7 +181,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
     return null;
   }
 
-  protected void performMethodInvocationAction(String methodCall, String invocationType, CsccContext csccContext) {
+  protected void handleMethodInvocation(String methodCall, String invocationType, CsccContext csccContext) {
     // NOP
   }
 
@@ -213,7 +218,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   public Void visit(IMethodReference methodRef, LineContext context) {
     String methodCall = methodRef.getMethodName().getName();
     String type = methodRef.getMethodName().getDeclaringType().getFullName();
-    performMethodInvocationAction(methodCall, type, context.getCsccContext());
+    handleMethodInvocation(methodCall, type, context.getCsccContext());
 
     context.addToken(methodRef.getMethodName().getName());
     return null;
@@ -239,7 +244,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   public Void visit(ICastExpression expr, LineContext context) {
     if (expr.getOperator() == CastOperator.SafeCast) {
       expr.getReference().accept(this, context);
-      context.addToken(" as ");
+      context.addToken("as");
       context.addToken(expr.getTargetType().getName());
     } else {
       context.addToken(expr.getTargetType().getName());
@@ -251,7 +256,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(ITypeCheckExpression expr, LineContext context) {
     expr.getReference().accept(this, context);
-    context.addToken(" instanceof ");
+    context.addToken("instanceof");
     context.addToken(expr.getType().getName());
     return null;
   }
@@ -312,61 +317,61 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
     expr.getLeftOperand().accept(this, context);
     switch (expr.getOperator()) {
       case And:
-        context.addToken(" && ");
+        context.addToken("&&");
         break;
       case BitwiseAnd:
-        context.addToken(" & ");
+        context.addToken("&");
         break;
       case BitwiseOr:
-        context.addToken(" | ");
+        context.addToken("|");
         break;
       case BitwiseXor:
-        context.addToken(" ^ ");
+        context.addToken("^");
         break;
       case Divide:
-        context.addToken(" / ");
+        context.addToken("/");
         break;
       case Equal:
-        context.addToken(" == ");
+        context.addToken("==");
         break;
       case GreaterThan:
-        context.addToken(" > ");
+        context.addToken(">");
         break;
       case GreaterThanOrEqual:
-        context.addToken(" >= ");
+        context.addToken(">=");
         break;
       case LessThan:
-        context.addToken(" < ");
+        context.addToken("<");
         break;
       case LessThanOrEqual:
-        context.addToken(" <= ");
+        context.addToken("<=");
         break;
       case Minus:
-        context.addToken(" - ");
+        context.addToken("-");
         break;
       case Modulo:
-        context.addToken(" % ");
+        context.addToken("%");
         break;
       case Multiply:
-        context.addToken(" * ");
+        context.addToken("*");
         break;
       case NotEqual:
-        context.addToken(" != ");
+        context.addToken("!=");
         break;
       case Or:
-        context.addToken(" || ");
+        context.addToken("||");
         break;
       case Plus:
-        context.addToken(" + ");
+        context.addToken("+");
         break;
       case ShiftLeft:
-        context.addToken(" << ");
+        context.addToken("<<");
         break;
       case ShiftRight:
-        context.addToken(" >> ");
+        context.addToken(">>");
         break;
       default:
-        context.addToken(" ?? ");
+        context.addToken("??");
         break;
     }
     expr.getRightOperand().accept(this, context);
@@ -378,13 +383,13 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
     stmt.getReference().accept(this, context);
     switch (stmt.getOperation()) {
       case Add:
-        context.addToken(" += ");
+        context.addToken("+=");
         break;
       case Remove:
-        context.addToken(" -= ");
+        context.addToken("-=");
         break;
       default:
-        context.addToken(" ?? ");
+        context.addToken("??");
     }
     stmt.getExpression().accept(this, context);
     return null;

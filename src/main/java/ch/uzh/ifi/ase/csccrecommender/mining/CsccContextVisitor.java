@@ -7,8 +7,6 @@ import cc.kave.commons.model.ssts.expressions.assignable.ILambdaExpression;
 import cc.kave.commons.model.ssts.expressions.loopheader.ILoopHeaderBlockExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.statements.*;
-import cc.kave.commons.utils.ssts.SSTPrintingContext;
-import cc.kave.commons.utils.ssts.SSTPrintingVisitor;
 import com.google.inject.Singleton;
 
 @SuppressWarnings({"squid:S1185"})
@@ -33,16 +31,6 @@ public class CsccContextVisitor extends AbstractTraversingNodeVisitor<CsccContex
   @Override
   public Void visit(IMethodDeclaration decl, CsccContext context) {
     context.clear();
-
-    // TODO: Remove this block after testing.
-    SSTPrintingContext printingContext = new SSTPrintingContext();
-    decl.accept(new SSTPrintingVisitor(), printingContext);
-    System.out.println();
-    System.out.println("-------------------------------------------------------------------------");
-    System.out.println(printingContext);
-    System.out.println("-------------------------------------------------------------------------");
-    System.out.println();
-
     visit(decl.getBody(), context);
     return null;
   }

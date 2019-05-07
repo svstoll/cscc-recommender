@@ -1,5 +1,6 @@
 package ch.uzh.ifi.ase.csccrecommender.mining;
 
+import cc.kave.commons.model.naming.codeelements.IMethodName;
 import cc.kave.commons.model.ssts.visitor.ISSTNode;
 import ch.uzh.ifi.ase.csccrecommender.utility.CollectionUtility;
 
@@ -7,9 +8,12 @@ import java.util.*;
 
 public class CsccContext {
 
-  private final LineContextVisitor lineContextVisitor;
-  private final Queue<LineContext> lineContexts = new ArrayDeque<>();
+  public static final String EMPTY_CONTEXT_IDENTIFIER = "!EMPTY!";
 
+  private final Queue<LineContext> lineContexts = new ArrayDeque<>();
+  private final LineContextVisitor lineContextVisitor;
+
+  private IMethodName currentMethodName = null;
   private LineContext mostRecentLineContext = null;
 
   public CsccContext(LineContextVisitor lineContextVisitor) {
@@ -40,6 +44,11 @@ public class CsccContext {
       overallContext.addAll(lineContext.getTokens());
     }
 
+    if (overallContext.isEmpty()) {
+      // We need to be able to retrieve empty contexts from the index again.
+      overallContext.add(EMPTY_CONTEXT_IDENTIFIER);
+    }
+
     return CollectionUtility.removeDuplicates(overallContext);
   }
 
@@ -50,5 +59,13 @@ public class CsccContext {
   public void clear() {
     lineContexts.clear();
     mostRecentLineContext = null;
+  }
+
+  public IMethodName getCurrentMethodName() {
+    return currentMethodName;
+  }
+
+  public void setCurrentMethodName(IMethodName currentMethodName) {
+    this.currentMethodName = currentMethodName;
   }
 }

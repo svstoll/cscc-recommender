@@ -5,7 +5,6 @@ import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationIndex;
 import ch.uzh.ifi.ase.csccrecommender.recommender.DocumentComparison;
 import ch.uzh.ifi.ase.csccrecommender.utility.CollectionUtility;
 import com.github.tomtung.jsimhash.SimHashBuilder;
-import com.google.inject.Inject;
 import org.apache.lucene.document.Document;
 
 import java.util.ArrayList;
@@ -21,8 +20,7 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
   private final MethodInvocationIndex methodInvocationIndex;
   private final List<String> recommendations = new ArrayList<>();
 
-  @Inject
-  protected RecommendingLineContextVisitor(MethodInvocationIndex methodInvocationIndex) {
+  public RecommendingLineContextVisitor(MethodInvocationIndex methodInvocationIndex) {
     this.methodInvocationIndex = methodInvocationIndex;
   }
 

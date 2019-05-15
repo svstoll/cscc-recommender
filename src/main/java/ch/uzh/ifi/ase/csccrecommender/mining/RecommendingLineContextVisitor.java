@@ -17,6 +17,7 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
 
   private static final int MAX_RECOMMENDATIONS = 3;
   private static final int MAX_REFINED_CANDIDATES = 200;
+  private static final double DROPPING_THRESHOLD = 0.3;
 
   private final MethodInvocationIndex methodInvocationIndex;
   private final List<String> recommendations = new ArrayList<>();
@@ -56,16 +57,19 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
   private void rankRecommendations(List<DocumentComparison> comparisons, String overallContext, String lineContext) {
     recommendations.clear();
     // TODO: Include Hamming distance from line context in sorting logic (unclear from paper description).
-    comparisons.sort(Comparator.comparingLong(DocumentComparison::getOverallContextHammingDistance));
+    // TODO: Done, check implementation in DocumentComparison.java file
 
+
+    //TODO: multiple thread sorting to improve performance (both first sort and second sort)
+    comparisons.sort(Comparator.comparingLong(DocumentComparison::getChosenHammingDistance));
     int refinedToIndex = comparisons.size() > MAX_REFINED_CANDIDATES ?
         MAX_REFINED_CANDIDATES :
         comparisons.size();
     List<DocumentComparison> refinedCandidates = comparisons.subList(0, refinedToIndex);
 
-    refinedCandidates.sort(Comparator.comparingInt((DocumentComparison comparison) ->
+    refinedCandidates.sort(Comparator.comparingDouble((DocumentComparison comparison) ->
         comparison.compareOverallContexts(overallContext))
-        .thenComparingInt(comparison -> comparison.compareLineContexts(lineContext)));
+        .thenComparingDouble(comparison -> comparison.compareLineContexts(lineContext)));
 
     int k = 0;
     HashSet<String> includedMethods = new HashSet<>();
@@ -73,6 +77,13 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
       if (k >= MAX_RECOMMENDATIONS) {
         break;
       }
+      //When similarity score falls below DROPPING_THRESHOLD (empirical value) then drop the candidate.
+      //As the list is already sorted then break the loop.
+      if((comparison.getLineContextLevenshteinDistance() < DROPPING_THRESHOLD) ||
+              (comparison.getOverallContextLcsDistance() < DROPPING_THRESHOLD)){
+        break;
+      }
+
       String recommendation = comparison.getDocument().get(MethodInvocationDocumentBuilder.METHOD_NAME_FIELD);
       if (!includedMethods.contains(recommendation)) {
         recommendations.add(recommendation);

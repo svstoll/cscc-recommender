@@ -72,3 +72,4 @@ fabric.properties
 .idea/sonarlint.xml
 .idea/sonarlint-state.xml
 .idea/sonarlint
+/target/

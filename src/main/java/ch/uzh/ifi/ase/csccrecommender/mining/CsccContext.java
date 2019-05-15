@@ -14,7 +14,7 @@ public class CsccContext {
   private final LineContextVisitor lineContextVisitor;
 
   private IMethodName currentMethodName = null;
-  private LineContext mostRecentLineContext = null;
+  public LineContext mostRecentLineContext = null;
 
   public CsccContext(LineContextVisitor lineContextVisitor) {
     this.lineContextVisitor = lineContextVisitor;

@@ -109,6 +109,7 @@ public class Evaluator4Contexts {
 			statistic.setPrecision(precision/lines);
 			statistic.setRecall(recall/lines);
 			statistic.setF_Measure();
+			statistic.setTotalCases(lines);
 			statistics.add(statistic);
 		}
 		
@@ -185,7 +186,7 @@ public class Evaluator4Contexts {
 				e.printStackTrace();
 			}
 			for(Statistics statistic: statistics) {
-				System.out.println(statistic.getType()+","+statistic.getPrecision()+","+statistic.getRecall()+","+statistic.getF_Measure());
+				System.out.println(statistic.getType()+","+statistic.getPrecision()+","+statistic.getRecall()+","+statistic.getF_Measure()+","+statistic.getTotalCases());
 			}
 		}
 		

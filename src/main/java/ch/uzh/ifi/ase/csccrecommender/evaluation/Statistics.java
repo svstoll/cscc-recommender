@@ -10,6 +10,13 @@ public class Statistics {
 		this.type = type;
 	}
 	String type;
+	public int getTotalCases() {
+		return totalCases;
+	}
+	public void setTotalCases(int totalCases) {
+		this.totalCases = totalCases;
+	}
+	int totalCases;
 	double Precision;
 	public double getPrecision() {
 		return Precision;

@@ -31,18 +31,31 @@ public class Evaluator4Contexts {
 	
 	  private String contextsDirectoryPath;
 	
-//	@Inject
-//	  protected Evaluator4Contexts() {
-//	    SerializedDataManager manager = new SerializedDataManager();
-//	    config = manager.load();
-//	  }
 	@Inject
 	public Evaluator4Contexts(@Named(ConfigProperties.CONTEXTS_DIRECTORY_PROPERTY) String contextsDirectoryPath) {
 	    this.contextsDirectoryPath = contextsDirectoryPath;
 	  }
 	
-	public List<Statistics> trainAndEvaluateOnContextDataset(int crossValidationNum) {
+	public List<String[]> loadExistedSplittingFrom(String path) {
+		ArrayList<String[]> groups = new ArrayList<String[]>();
+		BufferedReader in;
+		try {
+			in = new BufferedReader(new FileReader(path));
+			String line;
+			while((line = in.readLine()) != null)
+			{
+				String[] group = line.split(",");
+				groups.add(group);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return groups;
+	}
+	
+	public void trainAndEvaluateOnContextDataset(int crossValidationNum) {
 		List<String[]> ds = splitContextDataset(crossValidationNum);
+		//List<String[]> ds = loadExistedSplittingFrom("./data/groups.txt");
 		int currectItr = 0;
 		// train the model
 			// mask the data to be evaluated on
@@ -65,16 +78,10 @@ public class Evaluator4Contexts {
     	methodInvocationRecommender.recommend4AllInvocationsInAvailableContexts();
     		// change back
     	clearup(maskedFiles);
-		try {
-			return calculateStatistics(crossValidationNum);
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 	
-	public List<Statistics> calculateStatistics(int crossValidationNum) throws IOException {
-		File file = new File("./tmp");
+	public List<Statistics> calculateStatistics(int recommendations) throws IOException {
+		File file = new File("./tmp/" + recommendations + "/");
 		String[] types = file.list(new FilenameFilter() {
 		  @Override
 		  public boolean accept(File current, String name) {
@@ -86,7 +93,7 @@ public class Evaluator4Contexts {
 			Statistics statistic = new Statistics();
 			statistic.setType(type);
 			// get precision and recall
-			BufferedReader in = new BufferedReader(new FileReader("./tmp/"+type+"/out.txt"));
+			BufferedReader in = new BufferedReader(new FileReader("./tmp/" + recommendations + "/" + type + "/out.txt"));
 			String line;
 			double precision = 0;
 			double recall = 0;
@@ -99,8 +106,8 @@ public class Evaluator4Contexts {
 				recall+=Double.parseDouble(result[1]);
 			}
 			in.close();
-			statistic.setPrecision(precision/lines/crossValidationNum);
-			statistic.setRecall(recall/lines/crossValidationNum);
+			statistic.setPrecision(precision/lines);
+			statistic.setRecall(recall/lines);
 			statistic.setF_Measure();
 			statistics.add(statistic);
 		}
@@ -163,21 +170,26 @@ public class Evaluator4Contexts {
 	        .collect(Collectors.toList());
 	  }
 	public static void main(String[] args) {
-		System.out.println("MAX_RECOMMENDATIONS = 3");
 		int crossValidationNum = 2;
 		Injector injector = Guice.createInjector(new ProductionModule());
 		Evaluator4Contexts evaluator = injector.getInstance(Evaluator4Contexts.class);
-		List<Statistics> statistics = evaluator.trainAndEvaluateOnContextDataset(crossValidationNum);
+		evaluator.trainAndEvaluateOnContextDataset(crossValidationNum);
 		
-//		List<Statistics> statistics = new ArrayList<Statistics>();
-//		try {
-//			statistics = evaluator.calculateStatistics(crossValidationNum);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-		for(Statistics statistic: statistics) {
-			System.out.println(statistic.getType()+","+statistic.getPrecision()+","+statistic.getRecall()+","+statistic.getF_Measure());
+		int[] recommendationNum = {1,3,10};
+		for(int rNum: recommendationNum) {
+			System.out.println("MAX_RECOMMENDATIONS = " + rNum);
+			List<Statistics> statistics = new ArrayList<Statistics>();
+			try {
+				statistics = evaluator.calculateStatistics(rNum);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			for(Statistics statistic: statistics) {
+				System.out.println(statistic.getType()+","+statistic.getPrecision()+","+statistic.getRecall()+","+statistic.getF_Measure());
+			}
 		}
+		
+
 		
 	}
 

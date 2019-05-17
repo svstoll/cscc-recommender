@@ -4,6 +4,8 @@ import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationDocumentBuilder;
 import ch.uzh.ifi.ase.csccrecommender.utility.CollectionUtility;
 import com.github.tomtung.jsimhash.SimHashBuilder;
 import org.apache.lucene.document.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +14,7 @@ import static ch.uzh.ifi.ase.csccrecommender.utility.SstUtility.isValidToken;
 
 public class IndexingLineContextVisitor extends LineContextVisitor {
 
+  public static final Logger LOGGER = LoggerFactory.getLogger(IndexingLineContextVisitor.class);
   private final List<Document> cachedDocuments = new ArrayList<>();
 
   @Override
@@ -19,6 +22,12 @@ public class IndexingLineContextVisitor extends LineContextVisitor {
     if (!isValidToken(methodName) || ! isValidToken(invocationType)) {
       return;
     }
+
+    LOGGER.debug("Indexing method invocation.");
+    LOGGER.debug("Method name: {}", methodName);
+    LOGGER.debug("Type: {}", invocationType);
+    LOGGER.debug("Overall tokens: {}", csccContext.getOverallContextTokens());
+    LOGGER.debug("Line tokens: {}", csccContext.getLineContextTokens());
 
     SimHashBuilder simHashBuilder = new SimHashBuilder();
 

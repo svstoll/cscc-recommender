@@ -36,9 +36,9 @@ public class CompletionEventExtractor {
       LOGGER.info("Extracting events from '{}'.", zipFilePath);
       long start = System.currentTimeMillis();
       List<CompletionEvent> completionEvents = new ArrayList<>();
-      try (ReadingArchive ra = new ReadingArchive(new File(zipFilePath))) {
-        while (ra.hasNext()) {
-          IIDEEvent event = ra.getNext(IIDEEvent.class);
+      try (ReadingArchive readingArchive = new ReadingArchive(new File(zipFilePath))) {
+        while (readingArchive.hasNext()) {
+          IIDEEvent event = readingArchive.getNext(IIDEEvent.class);
           identifyCompletionEvent(event, completionEvents);
         }
       }

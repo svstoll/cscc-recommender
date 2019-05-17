@@ -7,12 +7,17 @@ import cc.kave.commons.model.ssts.expressions.assignable.ILambdaExpression;
 import cc.kave.commons.model.ssts.expressions.loopheader.ILoopHeaderBlockExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.statements.*;
+import cc.kave.commons.utils.ssts.SSTPrintingContext;
+import cc.kave.commons.utils.ssts.SSTPrintingVisitor;
 import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"squid:S1185"})
 @Singleton
 public class CsccContextVisitor extends AbstractTraversingNodeVisitor<CsccContext, Void> {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(CsccContextVisitor.class);
   @Override
   public Void visit(IDelegateDeclaration stmt, CsccContext context) {
     return null;
@@ -31,6 +36,16 @@ public class CsccContextVisitor extends AbstractTraversingNodeVisitor<CsccContex
   @Override
   public Void visit(IMethodDeclaration decl, CsccContext context) {
     context.clear();
+    context.setCurrentMethodName(decl.getName());
+
+    if (LOGGER.isDebugEnabled()) {
+      SSTPrintingContext printingContext = new SSTPrintingContext();
+      decl.accept(new SSTPrintingVisitor(), printingContext);
+      LOGGER.debug("-------------------------------------------------------------------------");
+      LOGGER.debug(printingContext.toString());
+      LOGGER.debug("-------------------------------------------------------------------------");
+    }
+
     visit(decl.getBody(), context);
     return null;
   }

@@ -9,27 +9,67 @@ import cc.kave.commons.model.ssts.blocks.IUnsafeBlock;
 import cc.kave.commons.model.ssts.blocks.IUsingBlock;
 import cc.kave.commons.model.ssts.expressions.ISimpleExpression;
 import cc.kave.commons.model.ssts.expressions.assignable.*;
+import cc.kave.commons.model.ssts.expressions.simple.IConstantValueExpression;
 import cc.kave.commons.model.ssts.expressions.simple.INullExpression;
 import cc.kave.commons.model.ssts.expressions.simple.IReferenceExpression;
 import cc.kave.commons.model.ssts.impl.visitor.AbstractTraversingNodeVisitor;
 import cc.kave.commons.model.ssts.references.*;
 import cc.kave.commons.model.ssts.statements.*;
 import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-// TODO: Find a way to add missing token "this".
+import java.util.HashMap;
+import java.util.Map;
+
+import static ch.uzh.ifi.ase.csccrecommender.utility.SstUtility.*;
+import static ch.uzh.ifi.ase.csccrecommender.utility.StringUtility.isNullOrEmpty;
+
 @SuppressWarnings({"squid:S1185"})
 @Singleton
 public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContext, Void> {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(LineContextVisitor.class);
+
+  private final Map<String, String> variableDeclarations = new HashMap<>();
+
   @Override
   public Void visit(ICompletionExpression entity, LineContext context) {
+    // TODO: Check if there are completion expressions for constructors.
     if (entity.getVariableReference() != null) {
-      entity.getVariableReference().accept(this, context);
+      String type = variableDeclarations.get(entity.getVariableReference().getIdentifier());
+      if (isValidToken(type)) {
+        handleCompletionExpression(type, context.getCsccContext());
+      }
+      else {
+        LOGGER.error("Recommendation failed because the type of the variable reference could not " +
+            "be resolved for the completion expression.");
+      }
     }
-
-    // TODO: What does it imply if type reference is null?
-    if (entity.getTypeReference() != null) {
-      handleCompletionExpression(entity.getTypeReference().getFullName(), context.getCsccContext());
+    else if (entity.getTypeReference() != null) {
+      String type = entity.getTypeReference().getFullName();
+      if (isValidToken(type)) {
+        handleCompletionExpression(entity.getTypeReference().getFullName(), context.getCsccContext());
+      }
+      else {
+        LOGGER.error("Recommendation failed because the type of the static reference could not " +
+            "be resolved for the completion expression.");
+      }
+    }
+    else if (context.getCsccContext().getCurrentMethodName() != null) {
+      String type = context.getCsccContext().getCurrentMethodName().getDeclaringType().getFullName();
+      if (isValidToken(type)) {
+        handleCompletionExpression(type, context.getCsccContext());
+      }
+      else {
+        LOGGER.error("Recommendation failed because the declaring type of the method where the " +
+            "completion expression occurred could not be resolved.");
+      }
+    }
+    else {
+      LOGGER.error("Recommendation failed because there was neither a static type reference nor " +
+          "a variable reference associated with the completion expression and the type of the " +
+          "entity declaring the method was also unknown.");
     }
     return null;
   }
@@ -40,7 +80,8 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
 
   @Override
   public Void visit(IVariableDeclaration stmt, LineContext context) {
-    context.addToken(stmt.getType().getName());
+    variableDeclarations.put(stmt.getReference().getIdentifier(), stmt.getType().getFullName());
+    context.addToken(resolveTypeName(stmt.getType()));
     stmt.getReference().accept(this, context);
     return null;
   }
@@ -106,7 +147,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IForEachLoop block, LineContext context) {
     context.addToken("foreach");
-    context.addToken(block.getDeclaration().getType().getName());
+    context.addToken(resolveTypeName(block.getDeclaration().getType()));
     block.getDeclaration().getReference().accept(this, context);
     context.addToken("in");
     block.getLoopedReference().accept(this, context);
@@ -132,14 +173,12 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
     return null;
   }
 
-  // TODO: What is this actually...?
   @Override
   public Void visit(IComposedExpression expr, LineContext context) {
     context.addToken("composed");
     for (IReference reference : expr.getReferences()) {
       reference.accept(this, context);
     }
-
     return null;
   }
 
@@ -156,13 +195,12 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IInvocationExpression expr, LineContext context) {
     IMethodName methodName = expr.getMethodName();
-    String simpleMethodName = methodName.getName();
     String type = methodName.getDeclaringType().getFullName();
 
     if (methodName.isConstructor()) {
       context.addToken("new");
-      handleMethodInvocation(simpleMethodName, type, context.getCsccContext());
-      context.addToken(simpleMethodName);
+      handleMethodInvocation(methodName.getName(), type, context.getCsccContext());
+      context.addToken(methodName.getDeclaringType().getName());
     } else {
       if (methodName.isStatic()) {
         context.addToken(methodName.getDeclaringType().getName());
@@ -170,8 +208,8 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
         expr.getReference().accept(this, context);
       }
 
-      handleMethodInvocation(simpleMethodName, type, context.getCsccContext());
-      context.addToken(simpleMethodName);
+      handleMethodInvocation(methodName.getName(), type, context.getCsccContext());
+      context.addToken(methodName.getName());
     }
 
     for (ISimpleExpression parameter : expr.getParameters()) {
@@ -197,7 +235,17 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   }
 
   @Override
+  public Void visit(IConstantValueExpression expr, LineContext context) {
+    String value = expr.getValue();
+    if (!isNullOrEmpty(value) && (value.equals("false") || value.equals("true"))) {
+      context.addToken(value);
+    }
+    return null;
+  }
+
+  @Override
   public Void visit(INullExpression expr, LineContext context) {
+    context.addToken("null");
     return null;
   }
 
@@ -209,13 +257,19 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
 
   @Override
   public Void visit(IEventReference eventRef, LineContext context) {
-    eventRef.getReference().accept(this, context);
-    context.addToken(eventRef.getEventName().getName()); // TODO: should this be included?
+    if (isSelfReferenceToken(eventRef.getReference().getIdentifier())) {
+      context.addToken(eventRef.getReference().getIdentifier());
+    }
+    context.addToken(eventRef.getEventName().getName());
     return null;
   }
 
   @Override
   public Void visit(IMethodReference methodRef, LineContext context) {
+    if (isSelfReferenceToken(methodRef.getReference().getIdentifier())) {
+      context.addToken(methodRef.getReference().getIdentifier());
+    }
+
     String methodCall = methodRef.getMethodName().getName();
     String type = methodRef.getMethodName().getDeclaringType().getFullName();
     handleMethodInvocation(methodCall, type, context.getCsccContext());
@@ -225,12 +279,26 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   }
 
   @Override
+  public Void visit(IFieldReference fieldRef, LineContext context) {
+    if (isSelfReferenceToken(fieldRef.getReference().getIdentifier())) {
+      context.addToken(fieldRef.getReference().getIdentifier());
+    }
+    return null;
+  }
+
+  @Override
   public Void visit(IPropertyReference propertyRef, LineContext context) {
+    if (isSelfReferenceToken(propertyRef.getReference().getIdentifier())) {
+      context.addToken(propertyRef.getReference().getIdentifier());
+    }
     return null;
   }
 
   @Override
   public Void visit(IVariableReference varRef, LineContext context) {
+    if (isSelfReferenceToken(varRef.getIdentifier())) {
+      context.addToken(varRef.getIdentifier());
+    }
     return null;
   }
 
@@ -245,9 +313,9 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
     if (expr.getOperator() == CastOperator.SafeCast) {
       expr.getReference().accept(this, context);
       context.addToken("as");
-      context.addToken(expr.getTargetType().getName());
+      context.addToken(resolveTypeName(expr.getTargetType()));
     } else {
-      context.addToken(expr.getTargetType().getName());
+      context.addToken(resolveTypeName(expr.getTargetType()));
       expr.getReference().accept(this, context);
     }
     return null;
@@ -257,7 +325,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   public Void visit(ITypeCheckExpression expr, LineContext context) {
     expr.getReference().accept(this, context);
     context.addToken("instanceof");
-    context.addToken(expr.getType().getName());
+    context.addToken(resolveTypeName(expr.getType()));
     return null;
   }
 

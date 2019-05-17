@@ -21,7 +21,7 @@ public class Evaluator4CompletionEvents {
 	public void trainAndEvaluateOnEventsDataset() {
 		Injector injector = Guice.createInjector(new ProductionModule());
 	    MethodInvocationIndexer methodInvocationIndexer = injector.getInstance(MethodInvocationIndexer.class);
-	    methodInvocationIndexer.indexAllAvailableContexts(true);
+	    //methodInvocationIndexer.indexAllAvailableContexts(true);
 	    CompletionEventRecommender completionEventRecommender = injector.getInstance(CompletionEventRecommender.class);
 	    
 	    CompletionEventExtractor completionEventExtractor = injector.getInstance(CompletionEventExtractor.class);

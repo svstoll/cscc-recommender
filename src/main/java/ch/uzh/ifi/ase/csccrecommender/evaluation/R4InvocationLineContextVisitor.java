@@ -101,7 +101,7 @@ public class R4InvocationLineContextVisitor extends LineContextVisitor {
 
     rankRecommendations(comparisons, overallContextConcatenated, lineContextConcatenated);
     // record in txt
-    String correctRecommendation = csccContext.getCurrentMethodName().getName();
+    String correctRecommendation = methodName;
 //    System.out.println("correct: " + correctRecommendation);
 //    System.out.println("recommendations: " + recommendations.toString());
     String isRecommendationCorrectFor1 = "0";

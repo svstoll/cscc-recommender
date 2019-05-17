@@ -61,35 +61,39 @@ public class CompletionEventRecommender {
 	    
 	    // get parent type
 	    String resultsType = "";
-		  ISSTNode node = csccContext.mostRecentLineContext.getNode();
-		  if(node instanceof IAssignment)
-			  resultsType = "IAssignment";
-		  else if(node instanceof IBreakStatement)
-			  resultsType = "IBreakStatement";
-		  else if(node instanceof IContinueStatement)
-			  resultsType = "IContinueStatement";
-		  else if(node instanceof IEventSubscriptionStatement)
-			  resultsType = "IEventSubscriptionStatement";
-		  else if(node instanceof IExpressionStatement)
-			  resultsType = "IExpressionStatement";
-		  else if(node instanceof IGotoStatement)
-			  resultsType = "IGotoStatement";
-		  else if(node instanceof ILabelledStatement)
-			  resultsType = "ILabelledStatement";
-		  else if(node instanceof IReturnStatement)
-			  resultsType = "IReturnStatement";
-		  else if(node instanceof IThrowStatement)
-			  resultsType = "IThrowStatement";
-		  else if(node instanceof IVariableDeclaration)
-			  resultsType = "IVariableDeclaration";
-		  else if(node instanceof ILoopHeaderBlockExpression)
-			  resultsType = "ILoopHeaderBlockExpression";
-		  else if(node instanceof IForLoop)
-			  resultsType = "IForLoop";
-		  else {
-			  resultsType = "Others";
-			  System.out.println(node.toString()  );
-		  }
+	    if(csccContext.mostRecentLineContext == null)
+	    	resultsType = "Others";
+	    else {
+	    	ISSTNode node = csccContext.mostRecentLineContext.getNode();
+			  if(node instanceof IAssignment)
+				  resultsType = "IAssignment";
+			  else if(node instanceof IBreakStatement)
+				  resultsType = "IBreakStatement";
+			  else if(node instanceof IContinueStatement)
+				  resultsType = "IContinueStatement";
+			  else if(node instanceof IEventSubscriptionStatement)
+				  resultsType = "IEventSubscriptionStatement";
+			  else if(node instanceof IExpressionStatement)
+				  resultsType = "IExpressionStatement";
+			  else if(node instanceof IGotoStatement)
+				  resultsType = "IGotoStatement";
+			  else if(node instanceof ILabelledStatement)
+				  resultsType = "ILabelledStatement";
+			  else if(node instanceof IReturnStatement)
+				  resultsType = "IReturnStatement";
+			  else if(node instanceof IThrowStatement)
+				  resultsType = "IThrowStatement";
+			  else if(node instanceof IVariableDeclaration)
+				  resultsType = "IVariableDeclaration";
+			  else if(node instanceof ILoopHeaderBlockExpression)
+				  resultsType = "ILoopHeaderBlockExpression";
+			  else if(node instanceof IForLoop)
+				  resultsType = "IForLoop";
+			  else {
+				  resultsType = "Others";
+			  }
+	    }
+		  
 	  // record in txt
 //		    System.out.println("correct: " + correctRecommendation);
 //		    System.out.println("recommendations: " + recommendations.toString());

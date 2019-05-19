@@ -2,6 +2,7 @@ package ch.uzh.ifi.ase.csccrecommender.mining;
 
 import cc.kave.commons.model.events.IIDEEvent;
 import cc.kave.commons.model.events.completionevents.CompletionEvent;
+import cc.kave.commons.model.events.completionevents.TerminationState;
 import cc.kave.commons.model.naming.codeelements.IMethodName;
 import cc.kave.commons.utils.io.ReadingArchive;
 import ch.uzh.ifi.ase.csccrecommender.properties.ConfigProperties;
@@ -16,7 +17,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Make extraction more robust.
 public class CompletionEventExtractor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CompletionEventExtractor.class);
@@ -32,7 +32,6 @@ public class CompletionEventExtractor {
     List<String> userZips = findAllUserZipFiles();
 
     for (String zipFilePath : userZips) {
-      // TODO: Could be run in multiple threads.
       LOGGER.info("Extracting events from '{}'.", zipFilePath);
       long start = System.currentTimeMillis();
       List<CompletionEvent> completionEvents = new ArrayList<>();
@@ -61,6 +60,7 @@ public class CompletionEventExtractor {
     if (event instanceof CompletionEvent) {
       CompletionEvent completionEvent = (CompletionEvent) event;
       if (completionEvent.getLastSelectedProposal() != null
+          && completionEvent.terminatedState == TerminationState.Applied
           && completionEvent.getLastSelectedProposal().getName() instanceof IMethodName) {
         completionEvents.add(completionEvent);
       }

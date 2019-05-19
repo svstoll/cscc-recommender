@@ -23,11 +23,13 @@ public class IndexingLineContextVisitor extends LineContextVisitor {
       return;
     }
 
-    LOGGER.debug("Indexing method invocation.");
-    LOGGER.debug("Method name: {}", methodName);
-    LOGGER.debug("Type: {}", invocationType);
-    LOGGER.debug("Overall tokens: {}", csccContext.getOverallContextTokens());
-    LOGGER.debug("Line tokens: {}", csccContext.getLineContextTokens());
+    LOGGER.debug("Indexing method invocation.\n" +
+        "Method name: {}\n" +
+        "Invocation type: {}\n" +
+        "Overall context tokens: {}\n" +
+        "Line context tokens: {}",
+        methodName, invocationType, csccContext.getOverallContextTokens(),
+        csccContext.getLineContextTokens());
 
     SimHashBuilder simHashBuilder = new SimHashBuilder();
 
@@ -39,7 +41,7 @@ public class IndexingLineContextVisitor extends LineContextVisitor {
     simHashBuilder.reset();
 
     String lineContextTokens = CollectionUtility.concatenateStrings(
-        csccContext.getLineContextTokens(), "");
+        csccContext.getLineContextTokens(), " ");
     simHashBuilder.addStringFeature(lineContextTokens);
     long lineContextSimHash = simHashBuilder.computeResult();
 

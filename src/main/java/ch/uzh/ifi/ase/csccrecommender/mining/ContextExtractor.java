@@ -18,7 +18,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// TODO: Make extraction more robust.
 public class ContextExtractor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ContextExtractor.class);
@@ -36,8 +35,6 @@ public class ContextExtractor {
     }
 
     for (String zipFilePath : findAllZipFilePaths(miningDirectory)) {
-      // TODO: Could run extraction multiple threads. Index writing might be the bottleneck, but
-      //  maybe we can also leave the indexWriter open to improve performance.
       LOGGER.info("Extracting contexts from '{}'.", zipFilePath);
       long start = System.currentTimeMillis();
       List<Context> contexts = extractContextsFromZipFile(zipFilePath);

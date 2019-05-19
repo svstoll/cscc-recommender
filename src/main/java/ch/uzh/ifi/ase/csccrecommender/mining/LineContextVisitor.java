@@ -35,14 +35,13 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
 
   @Override
   public Void visit(ICompletionExpression entity, LineContext context) {
-    // TODO: Check if there are completion expressions for constructors.
     if (entity.getVariableReference() != null) {
       String type = variableDeclarations.get(entity.getVariableReference().getIdentifier());
       if (isValidToken(type)) {
         handleCompletionExpression(type, context.getCsccContext());
       }
       else {
-        LOGGER.error("Recommendation failed because the type of the variable reference could not " +
+        LOGGER.warn("Recommendation failed because the type of the variable reference could not " +
             "be resolved for the completion expression.");
       }
     }
@@ -52,7 +51,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
         handleCompletionExpression(entity.getTypeReference().getFullName(), context.getCsccContext());
       }
       else {
-        LOGGER.error("Recommendation failed because the type of the static reference could not " +
+        LOGGER.warn("Recommendation failed because the type of the static reference could not " +
             "be resolved for the completion expression.");
       }
     }
@@ -62,12 +61,12 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
         handleCompletionExpression(type, context.getCsccContext());
       }
       else {
-        LOGGER.error("Recommendation failed because the declaring type of the method where the " +
+        LOGGER.warn("Recommendation failed because the declaring type of the method where the " +
             "completion expression occurred could not be resolved.");
       }
     }
     else {
-      LOGGER.error("Recommendation failed because there was neither a static type reference nor " +
+      LOGGER.warn("Recommendation failed because there was neither a static type reference nor " +
           "a variable reference associated with the completion expression and the type of the " +
           "entity declaring the method was also unknown.");
     }

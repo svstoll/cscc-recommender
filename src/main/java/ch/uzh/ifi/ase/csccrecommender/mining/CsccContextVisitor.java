@@ -37,6 +37,7 @@ public class CsccContextVisitor extends AbstractTraversingNodeVisitor<CsccContex
   public Void visit(IMethodDeclaration decl, CsccContext context) {
     context.clear();
     context.setCurrentMethodName(decl.getName());
+    context.setCurrentlyWithinExtensionMethod(decl.getName().isExtensionMethod());
 
     if (LOGGER.isDebugEnabled()) {
       SSTPrintingContext printingContext = new SSTPrintingContext();
@@ -227,7 +228,6 @@ public class CsccContextVisitor extends AbstractTraversingNodeVisitor<CsccContex
 
   @Override
   public Void visit(IUnsafeBlock block, CsccContext context) {
-    // TODO: Why has this block no body?
     return null;
   }
 

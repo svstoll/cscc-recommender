@@ -14,6 +14,7 @@ public class CsccContext {
   private final LineContextVisitor lineContextVisitor;
 
   private IMethodName currentMethodName = null;
+  private boolean currentlyWithinExtensionMethod = false;
   private LineContext mostRecentLineContext = null;
 
   public CsccContext(LineContextVisitor lineContextVisitor) {
@@ -67,5 +68,13 @@ public class CsccContext {
 
   public void setCurrentMethodName(IMethodName currentMethodName) {
     this.currentMethodName = currentMethodName;
+  }
+
+  public boolean isCurrentlyWithinExtensionMethod() {
+    return currentlyWithinExtensionMethod;
+  }
+
+  public void setCurrentlyWithinExtensionMethod(boolean currentlyWithinExtensionMethod) {
+    this.currentlyWithinExtensionMethod = currentlyWithinExtensionMethod;
   }
 }

@@ -6,27 +6,26 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.commons.text.similarity.LongestCommonSubsequence;
 import org.apache.lucene.document.Document;
 
-public class DocumentComparison {
+public class CandidateDocumentComparator {
 
-    private static final int LINE_CONTEXT_SWITCH_THRESHOLD = 25;  // 25 is picked randomly
-    private final Document document;
-    private final long overallContextHammingDistance;
-    private final long lineContextHammingDistance;
+    private static final int LINE_CONTEXT_SWITCH_THRESHOLD = 25;
+
+    private final Document candidateDocument;
     private Double overallContextLcsDistance = null;
     private Double lineContextLevenshteinDistance = null;
-    private final long chosenHammingDistance;
+    private final long hammingDistanceForComparison;
 
-    public DocumentComparison(Document document, long overallContextSimHashForProposal, long lineContextSimHashForProposal) {
-        this.document = document;
-        long overallContextSimHash = (long) document.getField(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_SIM_HASH_FIELD).numericValue();
-        long lineContextSimHash = (long) document.getField(MethodInvocationDocumentBuilder.LINE_CONTEXT_SIM_HASH_FIELD).numericValue();
-        this.overallContextHammingDistance = Util.hammingDistance(overallContextSimHash, overallContextSimHashForProposal);
-        this.lineContextHammingDistance = Util.hammingDistance(lineContextSimHash, lineContextSimHashForProposal);
-        //Use overall hamming distance unless hamming distance of line context exceeds predefined threshold.
-        if (this.lineContextHammingDistance > LINE_CONTEXT_SWITCH_THRESHOLD) {
-            this.chosenHammingDistance = this.lineContextHammingDistance;
+    public CandidateDocumentComparator(Document candidateDocument, long overallContextSimHashForProposal, long lineContextSimHashForProposal) {
+        this.candidateDocument = candidateDocument;
+        long overallContextSimHash = (long) candidateDocument.getField(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_SIM_HASH_FIELD).numericValue();
+        long lineContextSimHash = (long) candidateDocument.getField(MethodInvocationDocumentBuilder.LINE_CONTEXT_SIM_HASH_FIELD).numericValue();
+        long overallContextHammingDistance = Util.hammingDistance(overallContextSimHash, overallContextSimHashForProposal);
+        long lineContextHammingDistance = Util.hammingDistance(lineContextSimHash, lineContextSimHashForProposal);
+        // Use overall hamming distance unless hamming distance of line context exceeds predefined threshold.
+        if (lineContextHammingDistance > LINE_CONTEXT_SWITCH_THRESHOLD) {
+            this.hammingDistanceForComparison = lineContextHammingDistance;
         } else {
-            this.chosenHammingDistance = this.overallContextHammingDistance;
+            this.hammingDistanceForComparison = overallContextHammingDistance;
         }
     }
 
@@ -46,28 +45,12 @@ public class DocumentComparison {
         return lineContextLevenshteinDistance;
     }
 
-    public Document getDocument() {
-        return document;
+    public Document getCandidateDocument() {
+        return candidateDocument;
     }
 
-    public long getChosenHammingDistance() {
-        return chosenHammingDistance;
-    }
-
-    public double getLineContextLevenshteinDistance() {
-        if (lineContextLevenshteinDistance != null) {
-            return lineContextLevenshteinDistance;
-        } else {
-            return 0;
-        }
-    }
-
-    public double getOverallContextLcsDistance() {
-        if (lineContextLevenshteinDistance != null) {
-            return lineContextLevenshteinDistance;
-        } else {
-            return 0;
-        }
+    public long getHammingDistanceForComparison() {
+        return hammingDistanceForComparison;
     }
 
     /**
@@ -77,7 +60,7 @@ public class DocumentComparison {
      */
     private double getNormalizedLcs(String queryOverallContext) {
         LongestCommonSubsequence longestCommonSubsequence = new LongestCommonSubsequence();
-        String candidateOverallContext = document.get(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_FIELD);
+        String candidateOverallContext = candidateDocument.get(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_FIELD);
         int maxLength = Math.max(candidateOverallContext.length(), queryOverallContext.length());
         double lcs = longestCommonSubsequence.apply(candidateOverallContext, queryOverallContext);
         return lcs / maxLength;
@@ -90,7 +73,7 @@ public class DocumentComparison {
      */
     private double getNormalizedLevenshteinDistance(String queryLineContext) {
         LevenshteinDistance levenshteinDistance = LevenshteinDistance.getDefaultInstance();
-        String candidateLineContext = document.get(MethodInvocationDocumentBuilder.OVERALL_CONTEXT_FIELD);
+        String candidateLineContext = candidateDocument.get(MethodInvocationDocumentBuilder.LINE_CONTEXT_FIELD);
         int maxLength = Math.max(candidateLineContext.length(), queryLineContext.length());
         double lev = levenshteinDistance.apply(candidateLineContext, queryLineContext);
         return (1 - (lev / maxLength));

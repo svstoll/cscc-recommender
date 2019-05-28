@@ -23,7 +23,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class MethodInvocationIndexTest {
+public class MethodInvocationIndexTest {
 
   private Path tempIndexDirectory;
   private MethodInvocationIndex sut;
@@ -142,15 +142,7 @@ class MethodInvocationIndexTest {
   @Test
   void searchMethodInvocationDocuments_givenMatchingTypeAndOneMatchingToken_shouldReturnDocument() {
     // Given:
-    Document document = new MethodInvocationDocumentBuilder()
-        .withType("Test")
-        .withMethodName("test()")
-        .withOverallContext("overall context including line context")
-        .withLineContext("line context")
-        .withLineContextSimHash(0)
-        .withOverallContextSimHash(0)
-        .createDocument();
-    sut.indexDocuments(Collections.singletonList(document));
+    sut.indexDocuments(Collections.singletonList(testDocument));
 
     // When:
     List<Document> documents = sut.searchMethodInvocationDocuments("Test", Arrays.asList("overall", "notMatching"));

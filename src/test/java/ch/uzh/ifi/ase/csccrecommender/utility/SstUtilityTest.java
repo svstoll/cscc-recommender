@@ -10,6 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SstUtilityTest {
 
   @Test
+  void isValidToken_givenNullToken_shouldReturnFalse() {
+    assertFalse(SstUtility.isValidToken(null));
+  }
+
+  @Test
   void isValidToken_givenValidToken_shouldReturnTrue() {
     assertTrue(SstUtility.isValidToken("test"));
   }
@@ -22,11 +27,6 @@ public class SstUtilityTest {
   @Test
   void isValidToken_givenLongUnknownMarker_shouldReturnFalse() {
     assertFalse(SstUtility.isValidToken(SstUtility.UNKNOWN_MARKER_LONG));
-  }
-
-  @Test
-  void isValidToken_givenNull_shouldReturnFalse() {
-    assertFalse(SstUtility.isValidToken(null));
   }
 
   @Test

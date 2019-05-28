@@ -2,13 +2,13 @@ package ch.uzh.ifi.ase.csccrecommender.utility;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CollectionUtilityTest {
+public class CollectionUtilityTest {
 
   @Test
   void isNullOrEmpty_givenNull_shouldReturnTrue() {
@@ -26,14 +26,30 @@ class CollectionUtilityTest {
   }
 
   @Test
-  void removeDuplicates_givenNull_shouldReturnEmptyList() {
+  void removeDuplicates_givenNull_shouldReturnEmptyCollection() {
     assertTrue(CollectionUtility.removeDuplicates(null).isEmpty());
   }
 
   @Test
-  void removeDuplicates_givenListWithDuplicates_shouldListWithoutDuplicates() {
-    List<String> result = CollectionUtility.removeDuplicates(Arrays.asList("duplicate", "duplicate"));
-    assertEquals(1, result.size());
+  void removeDuplicates_givenEmptyCollection_shouldReturnEmptyCollection() {
+    assertTrue(CollectionUtility.removeDuplicates(Collections.emptyList()).isEmpty());
+  }
+
+  @Test
+  void removeDuplicates_givenCollectionWithDuplicates_shouldReturnFilteredCollection() {
+    ArrayList<Integer> testCollection = new ArrayList<>();
+    testCollection.add(1);
+    testCollection.add(5);
+    testCollection.add(5);
+    testCollection.add(10);
+    testCollection.add(10);
+
+    ArrayList<Integer> expectedCollection = new ArrayList<>();
+    expectedCollection.add(1);
+    expectedCollection.add(5);
+    expectedCollection.add(10);
+
+    assertEquals(expectedCollection, CollectionUtility.removeDuplicates(testCollection));
   }
 
   @Test
@@ -54,5 +70,13 @@ class CollectionUtilityTest {
   @Test
   void concatenateStrings_givenListWithMultipleItems_shouldReturnStringWithSeparatorBetweenItems() {
     assertEquals("a_b", CollectionUtility.concatenateStrings(Arrays.asList("a", "b"), "_"));
+  }
+
+  @Test
+  void concatenateStrings_givenNullSeparator_shouldReturnStringWithoutSpace() {
+    ArrayList<String> strings = new ArrayList<>();
+    strings.add("hello");
+    strings.add("world");
+    assertEquals("helloworld", CollectionUtility.concatenateStrings(strings, null));
   }
 }

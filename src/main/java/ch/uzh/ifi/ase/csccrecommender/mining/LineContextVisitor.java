@@ -80,7 +80,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IVariableDeclaration stmt, LineContext context) {
     variableDeclarations.put(stmt.getReference().getIdentifier(), stmt.getType().getFullName());
-    context.addToken(resolveTypeName(stmt.getType()));
+    context.addToken(resolveTypeNameToken(stmt.getType()));
     stmt.getReference().accept(this, context);
     return null;
   }
@@ -146,7 +146,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   @Override
   public Void visit(IForEachLoop block, LineContext context) {
     context.addToken("foreach");
-    context.addToken(resolveTypeName(block.getDeclaration().getType()));
+    context.addToken(resolveTypeNameToken(block.getDeclaration().getType()));
     block.getDeclaration().getReference().accept(this, context);
     context.addToken("in");
     block.getLoopedReference().accept(this, context);
@@ -312,9 +312,9 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
     if (expr.getOperator() == CastOperator.SafeCast) {
       expr.getReference().accept(this, context);
       context.addToken("as");
-      context.addToken(resolveTypeName(expr.getTargetType()));
+      context.addToken(resolveTypeNameToken(expr.getTargetType()));
     } else {
-      context.addToken(resolveTypeName(expr.getTargetType()));
+      context.addToken(resolveTypeNameToken(expr.getTargetType()));
       expr.getReference().accept(this, context);
     }
     return null;
@@ -324,7 +324,7 @@ public class LineContextVisitor extends AbstractTraversingNodeVisitor<LineContex
   public Void visit(ITypeCheckExpression expr, LineContext context) {
     expr.getReference().accept(this, context);
     context.addToken("instanceof");
-    context.addToken(resolveTypeName(expr.getType()));
+    context.addToken(resolveTypeNameToken(expr.getType()));
     return null;
   }
 

@@ -1,66 +1,63 @@
 package ch.uzh.ifi.ase.csccrecommender.utility;
 
-import cc.kave.commons.model.naming.impl.v0.types.TypeParameterName;
-import cc.kave.commons.model.naming.types.ITypeParameterName;
+import cc.kave.commons.model.naming.impl.v0.types.TypeName;
+import cc.kave.commons.model.naming.types.ITypeName;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import cc.kave.commons.model.naming.impl.v0.types.BaseTypeName;
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-class SstUtilityTest {
+public class SstUtilityTest {
 
   @Test
   void isValidToken_givenNullToken_shouldReturnFalse() {
     assertFalse(SstUtility.isValidToken(null));
   }
 
-
   @Test
-  void isValidToken_givenUNKOWN_MARKER_SHORT_shouldReturnFalse() {
-    assertFalse(SstUtility.isValidToken("?"));
+  void isValidToken_givenValidToken_shouldReturnTrue() {
+    assertTrue(SstUtility.isValidToken("test"));
   }
 
   @Test
-  void isValidToken_givenUNKOWN_MARKER_LONG_shouldReturnFalse() {
-    assertFalse(SstUtility.isValidToken("???"));
+  void isValidToken_givenShortUnknownMarker_shouldReturnFalse() {
+    assertFalse(SstUtility.isValidToken(SstUtility.UNKNOWN_MARKER_SHORT));
   }
 
   @Test
-  void resolveTypeName_givenNullTypeParameters_shouldReturnTypeName () {
-
-    BaseTypeName baseTypeName = mock(BaseTypeName.class);
-    when(baseTypeName.getTypeParameters()).thenReturn(null);
-    when(baseTypeName.getName()).thenReturn("helloworld");
-    assertEquals("helloworld", SstUtility.resolveTypeName(baseTypeName));
+  void isValidToken_givenLongUnknownMarker_shouldReturnFalse() {
+    assertFalse(SstUtility.isValidToken(SstUtility.UNKNOWN_MARKER_LONG));
   }
 
-
   @Test
-  void resolveTypeName_givenValidTypeParameters_shouldReturnResolvedTypeName () {
-    ArrayList<ITypeParameterName> typeParameters = new ArrayList<>();
-    TypeParameterName temp1 = new TypeParameterName("public");
-    TypeParameterName temp2 = new TypeParameterName("int");
-    TypeParameterName temp3 = new TypeParameterName("ArrayList");
-    TypeParameterName temp4 = new TypeParameterName("???");
-
-    typeParameters.add(temp1);
-    typeParameters.add(temp2);
-    typeParameters.add(temp3);
-    typeParameters.add(temp4);
-
-    BaseTypeName baseTypeName = mock(BaseTypeName.class);
-    when(baseTypeName.getTypeParameters()).thenReturn(typeParameters);
-    when(baseTypeName.getName()).thenReturn("helloworld");
-    assertEquals("helloworld<public, int, ArrayList, ???>", SstUtility.resolveTypeName(baseTypeName));
+  void resolveTypeName_givenTypeNameWithoutParameter_shouldReturnTypeNameToken() {
+    ITypeName typeName = new TypeName("T`1,P");
+    assertEquals("T", SstUtility.resolveTypeNameToken(typeName));
   }
 
+  @Test
+  void resolveTypeName_givenTypeNameWithParameter_shouldReturnTypeNameTokenWithParameters() {
+    ITypeName typeName = new TypeName("T`1[[G]],P");
+    assertEquals("T<G>", SstUtility.resolveTypeNameToken(typeName));
+  }
 
   @Test
-  void isSelfReferenceToken() {
-    String temp = "this";
-    assertTrue(SstUtility.isSelfReferenceToken(temp));
+  void resolveTypeName_givenNull_shouldThrowException() {
+    Assertions.assertThrows(NullPointerException.class, () -> SstUtility.resolveTypeNameToken(null));
+  }
+
+  @Test
+  void isSelfReferenceToken_givenSelfReferenceToken_shouldReturnTrue() {
+    assertTrue(SstUtility.isSelfReferenceToken("this"));
+  }
+
+  @Test
+  void isSelfReferenceToken_givenNoneSelfReferenceToken_shouldReturnFalse() {
+    assertFalse(SstUtility.isSelfReferenceToken("test"));
+  }
+
+  @Test
+  void isSelfReferenceToken_givenNull_shouldReturnFalse() {
+    assertFalse(SstUtility.isSelfReferenceToken(null));
   }
 }

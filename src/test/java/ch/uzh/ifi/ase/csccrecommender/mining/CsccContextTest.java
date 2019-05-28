@@ -1,9 +1,9 @@
 package ch.uzh.ifi.ase.csccrecommender.mining;
 
 import cc.kave.commons.model.naming.impl.v0.codeelements.MethodName;
+import cc.kave.commons.model.ssts.impl.statements.Assignment;
 import cc.kave.commons.model.ssts.impl.statements.BreakStatement;
 import cc.kave.commons.model.ssts.impl.statements.ContinueStatement;
-import cc.kave.commons.model.ssts.impl.statements.Assignment;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -11,22 +11,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
-class CsccContextTest {
+public class CsccContextTest {
 
   private CsccContext csccContext;
-  private LineContext expectedLineContext = new LineContext(csccContext);
+  private LineContext lineContext;
 
   @BeforeEach
   void setUp() {
-    IndexingLineContextVisitor indexingLineContextVisitor = mock(IndexingLineContextVisitor.class);
-    csccContext = new CsccContext(indexingLineContextVisitor);
-
+    IndexingLineContextVisitor lineContextVisitorMock = mock(IndexingLineContextVisitor.class);
+    csccContext = new CsccContext(lineContextVisitorMock);
+    lineContext = new LineContext(csccContext);
 
     BreakStatement testNode1 = new BreakStatement();
     csccContext.addLineContext(testNode1, "break");
-
 
     ContinueStatement testNode2 = new ContinueStatement();
     csccContext.addLineContext(testNode2, "continue");
@@ -37,21 +36,18 @@ class CsccContextTest {
     ContinueStatement testNode4 = new ContinueStatement();
     csccContext.addLineContext(testNode4, "else");
 
-
     BreakStatement testNode5 = new BreakStatement();
     csccContext.addLineContext(testNode5, "switch");
-
-
   }
 
   @Test
-  public void addLineContext_LineAdded_Successfully(){
-    expectedLineContext.addToken("switch");
-    assertEquals(expectedLineContext.getTokens(), csccContext.getLineContextTokens());
+  public void addLineContext_lineAdded_successfully(){
+    lineContext.addToken("switch");
+    assertEquals(lineContext.getTokens(), csccContext.getLineContextTokens());
   }
 
   @Test
-  public void getOverallContextTokens_OverallContextIsAdded_Correctly(){
+  public void getOverallContextTokens_overallContextIsAdded_correctly(){
     List<String> overallContext = new ArrayList<>();
     overallContext.add("break");
     overallContext.add("continue");
@@ -62,17 +58,11 @@ class CsccContextTest {
   }
 
   @Test
-  void clear() {
-    csccContext.clear();
-  }
-
-  @Test
   void setCurrentMethodName() {
     MethodName testName = new MethodName("testMethod");
     csccContext.setCurrentMethodName(testName);
     assertEquals(testName, csccContext.getCurrentMethodName());
   }
-
 
   @Test
   void isCurrentlyWithinExtensionMethod_notWithin() {
@@ -84,5 +74,4 @@ class CsccContextTest {
     csccContext.setCurrentlyWithinExtensionMethod(true);
     assertTrue(csccContext.isCurrentlyWithinExtensionMethod());
   }
-
 }

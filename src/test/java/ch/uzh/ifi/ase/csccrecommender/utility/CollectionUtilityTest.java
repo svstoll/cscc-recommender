@@ -1,74 +1,82 @@
 package ch.uzh.ifi.ase.csccrecommender.utility;
 
 import org.junit.jupiter.api.Test;
-import java.util.ArrayList;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CollectionUtilityTest {
+public class CollectionUtilityTest {
 
   @Test
-  public void isNullOrEmpty_givenEmptyCollection_shouldReturnTrue() {
-    assertTrue(CollectionUtility.isNullOrEmpty(new ArrayList<Integer>()));
+  void isNullOrEmpty_givenNull_shouldReturnTrue() {
+    assertTrue(CollectionUtility.isNullOrEmpty(null));
   }
 
   @Test
-  public void isNullOrEmpty_givenNonEmptyCollection_shouldReturnFalse() {
-    ArrayList<Integer> test_collection = new ArrayList<>();
-    test_collection.add(5);
-    assertFalse(CollectionUtility.isNullOrEmpty(test_collection));
+  void isNullOrEmpty_givenEmptyCollection_shouldReturnTrue() {
+    assertTrue(CollectionUtility.isNullOrEmpty(Collections.emptyList()));
   }
 
   @Test
-  public void removeDuplicates_givenNonEmptyCollectionWithDuplicates_shouldReturnFilteredCollection() {
-    ArrayList<Integer> test_collection = new ArrayList<>();
-    test_collection.add(1);
-    test_collection.add(5);
-    test_collection.add(5);
-    test_collection.add(10);
-    test_collection.add(10);
-    ArrayList<Integer> expected_collection = new ArrayList<>();
-    expected_collection.add(1);
-    expected_collection.add(5);
-    expected_collection.add(10);
-
-    assertEquals(expected_collection, CollectionUtility.removeDuplicates(test_collection));
+  void isNullOrEmpty_givenNoneEmptyCollection_shouldReturnFalse() {
+    assertFalse(CollectionUtility.isNullOrEmpty(Collections.singletonList("test")));
   }
 
   @Test
-  public void removeDuplicates_givenEmptyCollection_shouldReturnEmptyCollection() {
-    ArrayList<Integer> given_collection = new ArrayList<>();
-    assertEquals(0, CollectionUtility.removeDuplicates(given_collection).size());
+  void removeDuplicates_givenNull_shouldReturnEmptyCollection() {
+    assertTrue(CollectionUtility.removeDuplicates(null).isEmpty());
   }
 
   @Test
-  public void removeDuplicates_givenNull_shouldReturnEmptyCollection() {
-    assertEquals(0, CollectionUtility.removeDuplicates(null).size());
+  void removeDuplicates_givenEmptyCollection_shouldReturnEmptyCollection() {
+    assertTrue(CollectionUtility.removeDuplicates(Collections.emptyList()).isEmpty());
   }
-
 
   @Test
-  void concatenateStrings_givenEmptyListOfString_shouldReturnEmptyString() {
-    ArrayList<String> test_list = new ArrayList<>();
-    assertEquals("", CollectionUtility.concatenateStrings(test_list, " "));
-  }
+  void removeDuplicates_givenCollectionWithDuplicates_shouldReturnFilteredCollection() {
+    ArrayList<Integer> testCollection = new ArrayList<>();
+    testCollection.add(1);
+    testCollection.add(5);
+    testCollection.add(5);
+    testCollection.add(10);
+    testCollection.add(10);
 
+    ArrayList<Integer> expectedCollection = new ArrayList<>();
+    expectedCollection.add(1);
+    expectedCollection.add(5);
+    expectedCollection.add(10);
+
+    assertEquals(expectedCollection, CollectionUtility.removeDuplicates(testCollection));
+  }
 
   @Test
-  void concatenateStrings_givenNonEmptyListAndValidSeparator_shouldReturnConcatenatedString() {
-    ArrayList<String> test_list = new ArrayList<>();
-    test_list.add("hello");
-    test_list.add("world");
-    assertEquals("hello world", CollectionUtility.concatenateStrings(test_list, " "));
+  void concatenateStrings_givenNull_shouldReturnEmptyString() {
+    assertEquals("", CollectionUtility.concatenateStrings(null, "_"));
   }
 
+  @Test
+  void concatenateStrings_givenEmptyList_shouldReturnEmptyString() {
+    assertEquals("", CollectionUtility.concatenateStrings(Collections.emptyList(), "_"));
+  }
+
+  @Test
+  void concatenateStrings_givenListWithOneItem_shouldReturnStringWithoutSeparator() {
+    assertEquals("a", CollectionUtility.concatenateStrings(Collections.singletonList("a"), "_"));
+  }
+
+  @Test
+  void concatenateStrings_givenListWithMultipleItems_shouldReturnStringWithSeparatorBetweenItems() {
+    assertEquals("a_b", CollectionUtility.concatenateStrings(Arrays.asList("a", "b"), "_"));
+  }
 
   @Test
   void concatenateStrings_givenNullSeparator_shouldReturnStringWithoutSpace() {
-    ArrayList<String> test_list = new ArrayList<>();
-    test_list.add("hello");
-    test_list.add("world");
-    assertEquals("helloworld", CollectionUtility.concatenateStrings(test_list, null));
+    ArrayList<String> strings = new ArrayList<>();
+    strings.add("hello");
+    strings.add("world");
+    assertEquals("helloworld", CollectionUtility.concatenateStrings(strings, null));
   }
 }

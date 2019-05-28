@@ -5,17 +5,17 @@ import cc.kave.commons.model.naming.types.ITypeParameterName;
 
 public class SstUtility {
 
-  private static final String UNKOWN_MARKER_SHORT = "?";
-  private static final String UNKNOWN_MARKER_LONG = "???";
+  public static final String UNKNOWN_MARKER_SHORT = "?";
+  public static final String UNKNOWN_MARKER_LONG = "???";
 
   private SstUtility() {
   }
 
   public static boolean isValidToken(String token) {
-    return token != null && !UNKOWN_MARKER_SHORT.equals(token) && !UNKNOWN_MARKER_LONG.equals(token);
+    return token != null && !UNKNOWN_MARKER_SHORT.equals(token) && !UNKNOWN_MARKER_LONG.equals(token);
   }
 
-  public static String resolveTypeName(ITypeName typeName) {
+  public static String resolveTypeNameToken(ITypeName typeName) {
     StringBuilder result = new StringBuilder(typeName.getName());
     if (CollectionUtility.isNullOrEmpty(typeName.getTypeParameters())) {
       return result.toString();
@@ -30,7 +30,7 @@ public class SstUtility {
       isFirst = false;
 
       if (parameterName.isUnknown()) {
-        result.append(UNKOWN_MARKER_SHORT);
+        result.append(UNKNOWN_MARKER_SHORT);
       } else if (parameterName.isBound()) {
         result.append(parameterName.getTypeParameterType());
       } else {

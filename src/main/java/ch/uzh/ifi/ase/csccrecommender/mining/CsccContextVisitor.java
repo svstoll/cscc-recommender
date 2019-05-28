@@ -42,9 +42,7 @@ public class CsccContextVisitor extends AbstractTraversingNodeVisitor<CsccContex
     if (LOGGER.isDebugEnabled()) {
       SSTPrintingContext printingContext = new SSTPrintingContext();
       decl.accept(new SSTPrintingVisitor(), printingContext);
-      LOGGER.debug("-------------------------------------------------------------------------");
-      LOGGER.debug(printingContext.toString());
-      LOGGER.debug("-------------------------------------------------------------------------");
+      LOGGER.debug("Method currently traversed:\n{}", printingContext);
     }
 
     visit(decl.getBody(), context);

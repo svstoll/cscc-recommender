@@ -61,10 +61,6 @@ class CsccContextTest {
     assertEquals(overallContext, csccContext.getOverallContextTokens());
   }
 
-  @Test
-  void clear() {
-    csccContext.clear();
-  }
 
   @Test
   void setCurrentMethodName() {

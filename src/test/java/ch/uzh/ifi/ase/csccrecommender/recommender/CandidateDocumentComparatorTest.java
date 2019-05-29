@@ -29,26 +29,19 @@ class CandidateDocumentComparatorTest {
   }
 
   @Test
-  void compareOverallContexts() {
-    //double testOverallContextLcsDistance = docCompare1.compareOverallContexts("Loren ipsum");
+  void compareOverallContext_LcsDistanceWasAlreadyCalculated_ReturnTheSameLcsDistanceInSecondCall() {
+    //Calculate distance first time, before it was null
     calculatedOverallContextLcsDistance = docCompare1.compareOverallContexts("Loren ipsum");
+    //Check distance unchanged in second call
     assertEquals(calculatedOverallContextLcsDistance, docCompare1.compareOverallContexts("Loren ipsum"));
   }
 
   @Test
-  void compareLineContexts() {
+  void compareLineContexts_LevensteihnDistanceWasAlreadyCalculated_ReturnTheSameLevensteihnDistanceInSecondCall() {
+    //Calculate distance first time, before it was null
     calculatedLineContextLevensteihnDistance = docCompare1.compareLineContexts("Loren ipsum");
+    //Check distance unchanged in second call
     assertEquals(calculatedLineContextLevensteihnDistance, docCompare1.compareLineContexts("Loren ipsum"));
-  }
-
-  @Test
-  void getCandidateDocument() {
-    Document temp = docCompare1.getCandidateDocument();
-  }
-
-  @Test
-  void getHammingDistanceForComparison() {
-    double temp = docCompare1.getHammingDistanceForComparison();
   }
 
 }

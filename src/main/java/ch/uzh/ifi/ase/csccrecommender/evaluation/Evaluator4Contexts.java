@@ -76,7 +76,9 @@ public class Evaluator4Contexts {
             double precision = 0;
             if(made != 0)
                 precision = madeAndRelevant / made;
-            double recall = made / requested;
+            double recall = 0;
+            if(requested != 0)
+                recall = made / requested;
             statistic.setPrecision(precision);
             statistic.setRecall(recall);
             statistic.setTotalCases(requested);

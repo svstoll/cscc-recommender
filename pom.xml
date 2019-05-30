@@ -105,7 +105,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>ch.uzh.ifi.ase.csccrecommender.Main</mainClass>
+                            <mainClass>ch.uzh.ifi.ase.csccrecommender.evaluation.CompletionEventEvaluator</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

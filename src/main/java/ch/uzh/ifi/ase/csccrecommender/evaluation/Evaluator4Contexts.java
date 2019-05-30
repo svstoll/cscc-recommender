@@ -1,14 +1,8 @@
 package ch.uzh.ifi.ase.csccrecommender.evaluation;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -44,7 +38,7 @@ public class Evaluator4Contexts {
         List<String> maskedFiles = prepareContextDataset(ds.get(currectItr));
         Injector injector = Guice.createInjector(new ProductionModule());
         MethodInvocationIndexer methodInvocationIndexer = injector.getInstance(MethodInvocationIndexer.class);
-        methodInvocationIndexer.indexAllAvailableContexts(true);
+        //methodInvocationIndexer.indexAllAvailableContexts(true);
         // change back
         clearup(maskedFiles);
         maskedFiles.clear();
@@ -62,41 +56,40 @@ public class Evaluator4Contexts {
         clearup(maskedFiles);
     }
 
-    public Statistics calculateStatistics(int recommendations) throws IOException {
-        File file = new File("./tmp/" + recommendations + "/");
+    public Statistics calculateStatistics(int recommendations){
         Statistics statistic = new Statistics();
         // get precision and recall
-        BufferedReader in = new BufferedReader(new FileReader("./tmp/" + recommendations + "/out.txt"));
-        String line;
-        double madeAndRelevant = 0;
-        double made = 0;
-        int requested = 0;
-        while ((line = in.readLine()) != null) {
-            String[] result = line.split(",");
-            requested += 1;
-            if (Double.parseDouble(result[0]) > 0)
-                madeAndRelevant += 1.0;
-            if (Double.parseDouble(result[1]) > 0)
-                made += 1;
+        try(BufferedReader in = new BufferedReader(new FileReader("./tmp/" + recommendations + "/out.txt"))){
+            String line;
+            double madeAndRelevant = 0;
+            double made = 0;
+            int requested = 0;
+            while ((line = in.readLine()) != null) {
+                String[] result = line.split(",");
+                requested += 1;
+                if (Double.parseDouble(result[0]) > 0)
+                    madeAndRelevant += 1.0;
+                if (Double.parseDouble(result[1]) > 0)
+                    made += 1;
+            }
+            in.close();
+            double precision = 0;
+            if(made != 0)
+                precision = madeAndRelevant / made;
+            double recall = made / requested;
+            statistic.setPrecision(precision);
+            statistic.setRecall(recall);
+            statistic.setTotalCases(requested);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        in.close();
-        double precision = madeAndRelevant / made;
-        double recall = made / requested;
-        statistic.setPrecision(precision);
-        statistic.setRecall(recall);
-        statistic.setTotalCases(requested);
-
         return statistic;
     }
 
     private List<String[]> splitContextDataset(int num) {
         File file = new File(contextsDirectoryPath);
-        String[] directories = file.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File current, String name) {
-                return new File(current, name).isDirectory();
-            }
-        });
+        String[] directories = file.list((current, name) -> new File(current, name).isDirectory());
+
         LOGGER.info("Split Context Dataset into:");
         Collections.shuffle(Arrays.asList(directories));
         int groupSize = directories.length / num;
@@ -151,16 +144,16 @@ public class Evaluator4Contexts {
         evaluator.trainAndEvaluateOnContextDataset(crossValidationNum);
 
         int[] recommendationNum = {1, 3, 10};
-        for (int rNum : recommendationNum) {
-            System.out.println("MAX_RECOMMENDATIONS = " + rNum);
-            Statistics statistic = null;
-            try {
-                statistic = evaluator.calculateStatistics(rNum);
-            } catch (IOException e) {
-                e.printStackTrace();
+        String resultFileName = "result" + new SimpleDateFormat("yyyyMMddHHmm'.csv'").format(new Date());
+        try(PrintWriter pw = new PrintWriter(new FileWriter(resultFileName)))
+        {
+            for (int rNum : recommendationNum) {
+                pw.println("MAX_RECOMMENDATIONS = " + rNum);
+                Statistics statistic = evaluator.calculateStatistics(rNum);
+                pw.println(statistic.getPrecision() + "," + statistic.getRecall() + "," + statistic.getF_Measure() + "," + statistic.getTotalCases());
             }
-            System.out.println(statistic.getPrecision() + "," + statistic.getRecall() + "," + statistic.getF_Measure() + "," + statistic.getTotalCases());
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
 

@@ -7,8 +7,12 @@ import ch.uzh.ifi.ase.csccrecommender.mining.CsccContext;
 import ch.uzh.ifi.ase.csccrecommender.mining.CsccContextVisitor;
 
 import com.google.inject.Inject;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
 
 public class MethodInvocationRecommender {
 
@@ -24,7 +28,13 @@ public class MethodInvocationRecommender {
         this.contextExtractor = contextExtractor;
     }
 
-    public void recommend4AllInvocationsInAvailableContexts() {
+    void recommend4AllInvocationsInAvailableContexts() {
+        // make sure the tmp folder is empty
+        try {
+            FileUtils.deleteDirectory(new File("./tmp"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         contextExtractor.processAllContexts(contexts -> {
             long start = System.currentTimeMillis();
             R4InvocationLineContextVisitor r4InvocationLineContextVisitor = new R4InvocationLineContextVisitor(methodInvocationIndex);

@@ -3,7 +3,6 @@ package ch.uzh.ifi.ase.csccrecommender.evaluation;
 import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationIndex;
 import ch.uzh.ifi.ase.csccrecommender.mining.CsccContext;
 import ch.uzh.ifi.ase.csccrecommender.mining.RecommendingLineContextVisitor;
-import ch.uzh.ifi.ase.csccrecommender.recommender.RecommendationResult;
 
 import java.io.File;
 import java.io.FileWriter;

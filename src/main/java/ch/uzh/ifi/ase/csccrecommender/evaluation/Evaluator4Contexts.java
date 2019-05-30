@@ -38,7 +38,7 @@ public class Evaluator4Contexts {
         List<String> maskedFiles = prepareContextDataset(ds.get(currectItr));
         Injector injector = Guice.createInjector(new ProductionModule());
         MethodInvocationIndexer methodInvocationIndexer = injector.getInstance(MethodInvocationIndexer.class);
-        //methodInvocationIndexer.indexAllAvailableContexts(true);
+        methodInvocationIndexer.indexAllAvailableContexts(true);
         // change back
         clearup(maskedFiles);
         maskedFiles.clear();

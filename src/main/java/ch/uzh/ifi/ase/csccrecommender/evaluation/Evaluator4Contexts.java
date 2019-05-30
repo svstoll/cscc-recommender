@@ -83,7 +83,7 @@ public class Evaluator4Contexts {
             statistic.setRecall(recall);
             statistic.setTotalCases(requested);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.info("errors in calculateStatistics");
         }
         return statistic;
     }
@@ -155,7 +155,7 @@ public class Evaluator4Contexts {
                 pw.println(statistic.getPrecision() + "," + statistic.getRecall() + "," + statistic.getF_Measure() + "," + statistic.getTotalCases());
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.info("errors occured in writing result");
         }
 
 

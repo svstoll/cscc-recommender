@@ -2,15 +2,22 @@ package ch.uzh.ifi.ase.csccrecommender.evaluation;
 
 import cc.kave.commons.model.events.completionevents.CompletionEvent;
 import cc.kave.commons.model.naming.codeelements.IMethodName;
+import ch.uzh.ifi.ase.csccrecommender.ProductionModule;
+import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationIndexer;
 import ch.uzh.ifi.ase.csccrecommender.mining.CompletionEventExtractor;
 import ch.uzh.ifi.ase.csccrecommender.recommender.CsccRecommender;
 import ch.uzh.ifi.ase.csccrecommender.recommender.RecommendationResult;
+import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+
+import static ch.uzh.ifi.ase.csccrecommender.utility.StatisticsUtility.calculatePrecision;
+import static ch.uzh.ifi.ase.csccrecommender.utility.StatisticsUtility.calculateRecall;
 
 @Singleton
 public class CompletionEventEvaluator {
@@ -20,22 +27,22 @@ public class CompletionEventEvaluator {
   private final CompletionEventExtractor completionEventExtractor;
   private final CsccRecommender csccRecommender;
 
-  private int totalRecommendationsRequested = 0;
-  private int totalRecommendationsMade = 0;
+  private int recommendationsRequested = 0;
+  private int recommendationsMade = 0;
 
   private long totalRecommendationTimeInMs = 0;
 
-  private int totalTop1Recommendations = 0;
-  private int totalTop3Recommendations = 0;
-  private int totalTop10Recommendations = 0;
+  private int top1Recommendations = 0;
+  private int tp3Recommendations = 0;
+  private int top10Recommendations = 0;
 
-  private int totalExtensionContextRecommendationsRequested = 0;
-  private int totalExtensionContextRecommendationsMade = 0;
-  private int totalTop3ExtensionContextRecommendations = 0;
+  private int extensionContextRecommendationsRequested = 0;
+  private int extensionContextRecommendationsMade = 0;
+  private int top3ExtensionContextRecommendations = 0;
 
-  private int totalNoneExtensionContextRecommendationsRequested = 0;
-  private int totalNoneExtensionContextRecommendationsMade = 0;
-  private int totalTop3NoneExtensionContextRecommendations = 0;
+  private int noneExtensionContextRecommendationsRequested = 0;
+  private int noneExtensionContextRecommendationsMade = 0;
+  private int top3NoneExtensionContextRecommendations = 0;
 
   @Inject
   protected CompletionEventEvaluator(CompletionEventExtractor completionEventExtractor, CsccRecommender csccRecommender) {
@@ -43,34 +50,51 @@ public class CompletionEventEvaluator {
     this.csccRecommender = csccRecommender;
   }
 
+  public static void main(String[] args) {
+    LOGGER.info("Starting evaluation of completion events.");
+    Injector injector = Guice.createInjector(new ProductionModule());
+    MethodInvocationIndexer methodInvocationIndexer = injector.getInstance(MethodInvocationIndexer.class);
+    CompletionEventEvaluator completionEventEvaluator = injector.getInstance(
+        CompletionEventEvaluator.class);
+
+    methodInvocationIndexer.indexAllAvailableContexts(true);
+    completionEventEvaluator.executeEvaluation();
+  }
+
   public void executeEvaluation() {
     completionEventExtractor.processAllCompletionEvents(completionEvents -> {
       for (CompletionEvent completionEvent : completionEvents) {
-        List<RecommendationResult> recommendationResults = csccRecommender.recommendMethods(completionEvent);
+        List<RecommendationResult> recommendationResults = csccRecommender
+            .recommendMethods(completionEvent);
         for (RecommendationResult recommendationResult : recommendationResults) {
           updateStatistics(completionEvent, recommendationResult);
         }
       }
     });
 
-    LOGGER.info("Recommendations requested: {}", totalRecommendationsRequested);
-    LOGGER.info("Recommendations made: {}", totalRecommendationsMade);
-    LOGGER.info("Recommendation time (ms): {}", totalRecommendationTimeInMs / totalRecommendationsRequested);
+    LOGGER.info("Recommendations requested: {}", recommendationsRequested);
+    LOGGER.info("Recommendations made: {}", recommendationsMade);
+    LOGGER.info("Recommendation time (ms): {}",
+        totalRecommendationTimeInMs / recommendationsRequested);
 
-    LOGGER.info("Total recall: {}", calculateRecall(totalRecommendationsRequested, totalRecommendationsMade));
-    LOGGER.info("Top1 precision: {}", calculatePrecision(totalRecommendationsMade, totalTop1Recommendations));
-    LOGGER.info("Top3 precision: {}", calculatePrecision(totalRecommendationsMade, totalTop3Recommendations));
-    LOGGER.info("Top10 precision: {}", calculatePrecision(totalRecommendationsMade, totalTop10Recommendations));
+    LOGGER.info("Total recall: {}", calculateRecall(recommendationsRequested, recommendationsMade));
+    LOGGER.info("Top1 precision: {}", calculatePrecision(recommendationsMade, top1Recommendations));
+    LOGGER.info("Top3 precision: {}", calculatePrecision(recommendationsMade, tp3Recommendations));
+    LOGGER.info("Top10 precision: {}", calculatePrecision(recommendationsMade, top10Recommendations));
 
-    LOGGER.info("Recommendations requested within extension methods: {}", totalExtensionContextRecommendationsRequested);
-    LOGGER.info("Recommendations made within extension methods: {}", totalExtensionContextRecommendationsMade);
-    LOGGER.info("Recall within extension methods: {}", calculateRecall(totalExtensionContextRecommendationsRequested, totalExtensionContextRecommendationsMade));
-    LOGGER.info("Precision within extension methods: {}", calculatePrecision(totalExtensionContextRecommendationsMade, totalTop3ExtensionContextRecommendations));
+    LOGGER.info("Recommendations requested within extension methods: {}", extensionContextRecommendationsRequested);
+    LOGGER.info("Recommendations made within extension methods: {}", extensionContextRecommendationsMade);
+    LOGGER.info("Recall within extension methods: {}",
+        calculateRecall(extensionContextRecommendationsRequested, extensionContextRecommendationsMade));
+    LOGGER.info("Precision within extension methods: {}",
+        calculatePrecision(extensionContextRecommendationsMade, top3ExtensionContextRecommendations));
 
-    LOGGER.info("Recommendations requested NONE within extension methods: {}", totalNoneExtensionContextRecommendationsRequested);
-    LOGGER.info("Recommendations made within NONE extension methods: {}", totalNoneExtensionContextRecommendationsMade);
-    LOGGER.info("Total recall within NONE extension methods: {}", calculateRecall(totalNoneExtensionContextRecommendationsRequested, totalNoneExtensionContextRecommendationsMade));
-    LOGGER.info("Top3 precision within NONE extension methods: {}", calculatePrecision(totalNoneExtensionContextRecommendationsMade, totalTop3NoneExtensionContextRecommendations));
+    LOGGER.info("Recommendations requested NONE within extension methods: {}", noneExtensionContextRecommendationsRequested);
+    LOGGER.info("Recommendations made within NONE extension methods: {}", noneExtensionContextRecommendationsMade);
+    LOGGER.info("Total recall within NONE extension methods: {}",
+        calculateRecall(noneExtensionContextRecommendationsRequested, noneExtensionContextRecommendationsMade));
+    LOGGER.info("Top3 precision within NONE extension methods: {}",
+        calculatePrecision(noneExtensionContextRecommendationsMade, top3NoneExtensionContextRecommendations));
   }
 
   private void updateStatistics(CompletionEvent completionEvent, RecommendationResult recommendationResult) {
@@ -109,62 +133,40 @@ public class CompletionEventEvaluator {
   }
 
   private void updateTotalRecommendationsRequested(RecommendationResult recommendationResult) {
-    totalRecommendationsRequested++;
+    recommendationsRequested++;
     if (recommendationResult.isOccurredWithinExtensionMethod()) {
-      totalExtensionContextRecommendationsRequested++;
+      extensionContextRecommendationsRequested++;
     }
     else {
-      totalNoneExtensionContextRecommendationsRequested++;
+      noneExtensionContextRecommendationsRequested++;
     }
   }
 
   private void updateRecommendationsMade(RecommendationResult recommendationResult) {
-    totalRecommendationsMade++;
+    recommendationsMade++;
     if (recommendationResult.isOccurredWithinExtensionMethod()) {
-      totalExtensionContextRecommendationsMade++;
+      extensionContextRecommendationsMade++;
     }
     else {
-      totalNoneExtensionContextRecommendationsMade++;
+      noneExtensionContextRecommendationsMade++;
     }
   }
 
   private void updateSuccessfulRecommendations(RecommendationResult recommendationResult, boolean isTop1, boolean isTop3, boolean isTop10) {
     if (isTop1) {
-      totalTop1Recommendations++;
+      top1Recommendations++;
     }
     if (isTop3) {
-      totalTop3Recommendations++;
+      tp3Recommendations++;
       if (recommendationResult.isOccurredWithinExtensionMethod()) {
-        totalTop3ExtensionContextRecommendations++;
+        top3ExtensionContextRecommendations++;
       }
       else {
-        totalTop3NoneExtensionContextRecommendations++;
+        top3NoneExtensionContextRecommendations++;
       }
     }
     if (isTop10) {
-      totalTop10Recommendations++;
+      top10Recommendations++;
     }
-  }
-
-  private double calculateRecall(int requestedRecommendations, int recommendationsMade) {
-    if (requestedRecommendations <= 0) {
-      return 1;
-    }
-    if (recommendationsMade > requestedRecommendations) {
-      return 1;
-    }
-
-    return (double) recommendationsMade / (double) requestedRecommendations;
-  }
-
-  private double calculatePrecision(int recommendationsMade, int relevantRecommendations) {
-    if (recommendationsMade <= 0) {
-      return 1;
-    }
-    if (relevantRecommendations > recommendationsMade) {
-      return 1;
-    }
-
-    return (double) relevantRecommendations / (double) recommendationsMade;
   }
 }

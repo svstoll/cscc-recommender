@@ -8,15 +8,14 @@ import ch.uzh.ifi.ase.csccrecommender.utility.StringUtility;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static ch.uzh.ifi.ase.csccrecommender.utility.FileUtility.findAllZipFilePaths;
 
 public class ContextExtractor {
 
@@ -43,17 +42,6 @@ public class ContextExtractor {
 
       contextExtractionConsumer.consume(contexts);
     }
-  }
-
-  private List<String> findAllZipFilePaths(String directoryPath) {
-    if (StringUtility.isNullOrEmpty(directoryPath)) {
-      return Collections.emptyList();
-    }
-
-    return FileUtils.listFiles(new File(directoryPath), new String[]{"zip"}, true)
-        .stream()
-        .map(File::getAbsolutePath)
-        .collect(Collectors.toList());
   }
 
   private List<Context> extractContextsFromZipFile(String zipFilePath) {

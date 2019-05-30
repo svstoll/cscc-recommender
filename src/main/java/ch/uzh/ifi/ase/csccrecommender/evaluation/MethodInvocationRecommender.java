@@ -33,7 +33,7 @@ public class MethodInvocationRecommender {
         try {
             FileUtils.deleteDirectory(new File("./tmp"));
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.info("error in clear tmp folder");
         }
         contextExtractor.processAllContexts(contexts -> {
             long start = System.currentTimeMillis();

@@ -63,8 +63,8 @@ public class RecommendingLineContextVisitor extends LineContextVisitor {
 
     List<CandidateDocumentComparator> comparisons = new ArrayList<>();
     for (Document document : documents) {
-      CandidateDocumentComparator candidateDocumentComparator = new CandidateDocumentComparator(document,
-          overallContextSimHash, lineContextSimHash);
+      CandidateDocumentComparator candidateDocumentComparator = new CandidateDocumentComparator(
+          document, overallContextSimHash, lineContextSimHash);
       comparisons.add(candidateDocumentComparator);
     }
 

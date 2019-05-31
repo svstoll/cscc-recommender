@@ -80,7 +80,7 @@ public class CsccRecommender {
    */
   public void recommendForAllInvocationsInAvailableContexts(ContextEvaluationStatistics statistics) {
     contextExtractor.processAllContexts(contexts -> {
-      LOGGER.info("Performing recommendation for all method invocations within {} contexts.", contexts.size());
+      LOGGER.info("Performing recommendations for all method invocations within {} contexts.", contexts.size());
       InvocationRecommendationLineContextVisitor invocationRecommendationLineContextVisitor
           = new InvocationRecommendationLineContextVisitor(methodInvocationIndex, statistics);
       for (Context context : contexts) {

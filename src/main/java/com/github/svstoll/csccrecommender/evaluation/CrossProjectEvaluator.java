@@ -67,7 +67,18 @@ public class CrossProjectEvaluator {
     LOGGER.info("Starting context based evaluation.");
     Injector injector = Guice.createInjector(new ProductionModule());
     CrossProjectEvaluator evaluator = injector.getInstance(CrossProjectEvaluator.class);
-    evaluator.trainAndEvaluateOnContextDataset(2);
+
+    int splits = 2;
+    if (args.length > 0) {
+      try {
+        splits = Integer.parseInt(args[0]);
+      }
+      catch (NumberFormatException e) {
+        LOGGER.warn("The provided number of project splits could not be parsed. Using default of 2.", e);
+      }
+    }
+
+    evaluator.trainAndEvaluateOnContextDataset(splits);
   }
 
   public void trainAndEvaluateOnContextDataset(int splits) {

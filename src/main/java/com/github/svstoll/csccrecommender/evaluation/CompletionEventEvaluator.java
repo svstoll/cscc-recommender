@@ -94,7 +94,7 @@ public class CompletionEventEvaluator {
 
   public void executeEvaluation() {
     completionEventExtractor.processAllCompletionEvents(completionEvents -> {
-      LOGGER.info("Performing recommendation for {} completion events.", completionEvents.size());
+      LOGGER.info("Performing recommendations for {} completion events.", completionEvents.size());
       for (CompletionEvent completionEvent : completionEvents) {
         List<RecommendationResult> recommendationResults = csccRecommender.recommendMethods(completionEvent);
         for (RecommendationResult recommendationResult : recommendationResults) {

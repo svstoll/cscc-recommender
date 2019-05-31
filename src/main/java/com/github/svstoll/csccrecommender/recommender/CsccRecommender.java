@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Objects;
 
 @Singleton
 public class CsccRecommender {
@@ -46,9 +45,24 @@ public class CsccRecommender {
     this.contextExtractor = contextExtractor;
   }
 
+  /**
+   * Recommend method names for a given KaVe method completion event based on the specified index
+   * directory.
+   *
+   * @param completionEvent a KaVE method completion event.
+   * @return a ranked list of method name recommendations.
+   *
+   * @throws IllegalStateException if the last selected proposal of the completion event is
+   *                               {@code null} or is not a {@code IMethodName}.
+   */
   public List<RecommendationResult> recommendMethods(CompletionEvent completionEvent) {
+    if (completionEvent.getLastSelectedProposal() == null ||
+        !(completionEvent.getLastSelectedProposal().getName() instanceof IMethodName)) {
+      throw new IllegalArgumentException("Provide a valid method completion event where the last selected proposal is a IMethodName.");
+    }
+
     LOGGER.debug("Recommendation process started. Originally applied selection: {}",
-        ((IMethodName) Objects.requireNonNull(completionEvent.getLastSelectedProposal().getName())).getFullName());
+        ((IMethodName) completionEvent.getLastSelectedProposal().getName()).getFullName());
     CsccContextVisitor csccContextVisitor = new CsccContextVisitor();
     RecommendingLineContextVisitor recommendingLineContextVisitor
         = new RecommendingLineContextVisitor(methodInvocationIndex);
@@ -58,11 +72,17 @@ public class CsccRecommender {
     return recommendingLineContextVisitor.getRecommendationResults();
   }
 
-  public void recommendForAllInvocationsInAvailableContexts(ContextEvaluationStatistics contextEvaluationStatistics) {
+  /**
+   * Uses the specified index directory to perform a recommendation for every method invocation
+   * within the projects provided in the contexts dataset.
+   *
+   * @param statistics used to log overall recommendation statistics.
+   */
+  public void recommendForAllInvocationsInAvailableContexts(ContextEvaluationStatistics statistics) {
     contextExtractor.processAllContexts(contexts -> {
       LOGGER.info("Performing recommendation for all method invocations within {} contexts.", contexts.size());
       InvocationRecommendationLineContextVisitor invocationRecommendationLineContextVisitor
-          = new InvocationRecommendationLineContextVisitor(methodInvocationIndex, contextEvaluationStatistics);
+          = new InvocationRecommendationLineContextVisitor(methodInvocationIndex, statistics);
       for (Context context : contexts) {
         context.getSST().accept(new CsccContextVisitor(), new CsccContext(invocationRecommendationLineContextVisitor));
       }

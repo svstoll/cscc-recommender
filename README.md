@@ -1,6 +1,16 @@
 # CSCC Recommender
-
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ch.uzh.ifi.ase%3Acscc-recommender&metric=alert_status)](https://sonarcloud.io/dashboard?id=ch.uzh.ifi.ase%3Acscc-recommender)
+CSCC Recommender. A code completion system based on a work of Asaduzzaman, Muhammad, et al
+[CSCC: Simple, Efficient, Context Sensitive Code Completion](https://ieeexplore.ieee.org/document/6976073/)
+
+##Setting up the project
+
+1. Download KaVE data set from www.kave.cc/datasets. Download the context dataset and put it in ./data/contexts,
+then download the event dataset and put it in ./data/events. Or you can modify the config.properties file corresponding to the
+location of context dataset and event dataset on your machine.
+
+2. Check com.github.svstoll.csccrecommender.evaluation.CompletionEventEvaluator and run this class to trigger the code completion
+on the event dataset and receive the result as TopK precision as well as some other statistics.
 
 ### Evaluation
 Like in the indexing part, specify the location for context dataset, interaction dataset, and where to store indexed files.
@@ -12,3 +22,8 @@ The recall and precision formulas are from the paper. With that formula for calc
 
 #### Evaluate with KaVE Interaction Dataset
 Before calling the CompletionEventEvaluator, make sure indexed files are already stored in the location, specified in config.properties.
+
+
+## License
+
+This project is licensed under the Apache License 2.0.

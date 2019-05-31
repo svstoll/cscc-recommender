@@ -1,9 +1,10 @@
-package ch.uzh.ifi.ase.csccrecommender.recommender;
+package com.github.svstoll.csccrecommender.recommender;
 
-import ch.uzh.ifi.ase.csccrecommender.index.MethodInvocationDocumentBuilder;
+import com.github.svstoll.csccrecommender.index.MethodInvocationDocumentBuilder;
 import org.apache.lucene.document.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

@@ -6,7 +6,7 @@
 
     <groupId>ch.uzh.ifi.ase</groupId>
     <artifactId>cscc-recommender</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
     <name>CSCC Recommender</name>
     <description>An implementation of the Context Sensitive Code Completion (CSCC) Recommender proposed by

@@ -33,6 +33,20 @@ You can add this implementation of the CSCC recommender as a Apache Maven depend
 </dependencies>
 ```
 
+## Setting up the project
+1. Download KaVE data set from www.kave.cc/datasets. Download the context dataset and put it in ./data/contexts,
+then download the event dataset and put it in ./data/events. Or you can modify the config.properties file corresponding to the
+location of context dataset and event dataset on your machine.
+2. Check com.github.svstoll.csccrecommender.evaluation.CompletionEventEvaluator and run this class to trigger the code completion
+on the event dataset and receive the result as TopK precision as well as some other statistics.
+
+## Future Improvement
+Currently, the model can only recommend for Method. So Future Improvement could be adding recommendations for Property, Field, etc.
+
+## Implementation Difference 
+1. Value to switch between hamming distance for overall and line context not stated in paper.
+2. Droping if normalized distance metric below 0.3 leads to poor recall. So it's removed in the implementation.
+
 ## Evaluation
 In the original paper, the authors focused on two APIs, SWT and Swing/AWT. They chose 4 projects for each API and performed the evaluation from the following perspective:
 1. Ten-fold cross-validation. Doesn't care if it's cross-project recommendation or within-project recommendation. 

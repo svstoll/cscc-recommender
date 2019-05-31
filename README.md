@@ -1,5 +1,6 @@
 # CSCC Recommender
-
+### Summary
+We implemented the CSCC Recommender in the paper CSCC: Simple, Efficient, Context Sensitive Code Completion, by Muhammad A., Chanchal K., Roy Kevin A., Schneider Daqing H. Then carried out the evaluation using KaVE Context Dataset and KaVE Interaction Dataset, http://www.kave.cc.
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ch.uzh.ifi.ase%3Acscc-recommender&metric=alert_status)](https://sonarcloud.io/dashboard?id=ch.uzh.ifi.ase%3Acscc-recommender)
 
@@ -32,7 +33,7 @@ In summary, we carried out:
 
 #### Details
 1. The indexing part is pretty fast. But if the context dataset is split into 5 subgroups, all recommendations for one subgroup will take roughly 30 hours. So in the program, each time we only run for one iteration(with currectItr = 0). If want to run for all iterations, need to change function "trainAndEvaluateOnContextDataset".
-2. The recall and precision formulas are from the paper, equations (1)-(3). With that formula for calculating recall, the recall will be the same for TOP 1,TOP3,TOP10 recommendations. It's confusing but the Recalls in TABLE 1 for CSCC method in their paper confirm that they are calculating like this way.
+2. The recall and precision formulas are from the paper, equations (1)-(3). With that formula for calculating recall, the recall will be the same for TOP 1,TOP3,TOP10 recommendations. It's confusing but the Recalls in TABLE 1 for CSCC method in their paper confirm that they were calculating in this way.
 
 #### How to run
 Like in the indexing part, specify the location for context dataset, interaction dataset, and where to store indexed files in config.properties.

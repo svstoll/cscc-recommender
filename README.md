@@ -33,20 +33,6 @@ You can add this implementation of the CSCC recommender as a Apache Maven depend
 </dependencies>
 ```
 
-## Setting up the project
-1. Download KaVE data set from www.kave.cc/datasets. Download the context dataset and put it in ./data/contexts,
-then download the event dataset and put it in ./data/events. Or you can modify the config.properties file corresponding to the
-location of context dataset and event dataset on your machine.
-2. Check com.github.svstoll.csccrecommender.evaluation.CompletionEventEvaluator and run this class to trigger the code completion
-on the event dataset and receive the result as TopK precision as well as some other statistics.
-
-## Future Improvement
-Currently, the model can only recommend for Method. So Future Improvement could be adding recommendations for Property, Field, etc.
-
-## Implementation Difference 
-1. Value to switch between hamming distance for overall and line context not stated in paper.
-2. Droping if normalized distance metric below 0.3 leads to poor recall. So it's removed in the implementation.
-
 ## Evaluation
 In the original paper, the authors focused on two APIs, SWT and Swing/AWT. They chose 4 projects for each API and performed the evaluation from the following perspective:
 1. Ten-fold cross-validation. Doesn't care if it's cross-project recommendation or within-project recommendation. 
@@ -70,24 +56,27 @@ To reproduce these evaluations, check out the section before.
 ### KaVE Interaction Dataset Results
 The following results are based on the complete KaVE interaction dataset (18.01.2018). We only considered method completion events that have actually been applied and used all data from the KaVE static repository dataset to generate the underlying index.
 
-Recommendations requested: 4324
-Recommendations made: 1502
+Recommendations requested: 4324<br/>
+Recommendations made: 1502<br/>
 Average recommendation time (ms): 18.74
 
-Overall recall: 0.347
-Top-1 precision: 0.174
-Top-3 precision: 0.346
-Top-10 precision: 0.455
+Overall recall: 0.347<br/>
+Top-1 precision: 0.174<br/>
+Top-3 precision: 0.346<br/>
+Top-10 precision: 0.455<br/>
 
-Recommendations requested within extension methods: 209
-Recommendations made within extension methods: 98
-Overall recall within extension methods: 0.469
+Recommendations requested within extension methods: 209<br/>
+Recommendations made within extension methods: 98<br/>
+Overall recall within extension methods: 0.469<br/>
 Top-3 precision within extension methods: 0.5
 
-Recommendations requested NONE within extension methods: 4115
-Recommendations made within NONE extension methods: 1404
-Overall recall within NONE extension methods: 0.341
+Recommendations requested NONE within extension methods: 4115<br/>
+Recommendations made within NONE extension methods: 1404<br/>
+Overall recall within NONE extension methods: 0.341<br/>
 Top-3 precision within NONE extension methods: 0.335
 
 ### Notes
 We calculated recall, precision and F-measure the same way as in the evaluation of the original paper see (p. 75). Therefore recall will be the same for for top-1, top-3 and top-10 recommendations (see also table 1, p. 76).
+
+## Future Improvement
+Currently, the recommender can only recommend method calls (including constructors). As an improvement, the recommender could be extended to allow recommendations for properties, fields, etc.

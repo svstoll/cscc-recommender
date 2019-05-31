@@ -8,6 +8,51 @@
     <artifactId>cscc-recommender</artifactId>
     <version>1.0-SNAPSHOT</version>
 
+    <name>CSCC Recommender</name>
+    <description>An implementation of the Context Sensitive Code Completion (CSCC) Recommender proposed by
+        Asaduzzaman et al. in the paper "CSCC: Simple, Efficient, Context Sensitive Code Completion" (2014).</description>
+    <url>https://github.com/svstoll/cscc-recommender</url>
+
+    <organization>
+        <name>com.github.svstoll</name>
+        <url>https://github.com/svstoll</url>
+    </organization>
+
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/svstoll/cscc-recommender/issues</url>
+    </issueManagement>
+
+    <scm>
+        <url>https://github.com/svstoll/cscc-recommender</url>
+        <connection>
+            scm:git:git://github.com/svstoll/cscc-recommender.git
+        </connection>
+        <developerConnection>
+            scm:git:ssh://git@github.com:svstoll/cscc-recommender.git
+        </developerConnection>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://github.com/svstoll/cscc-recommender/blob/master/LICENSE</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Sven Stoll</name>
+        </developer>
+        <developer>
+            <name>Dingguang Jin</name>
+        </developer>
+        <developer>
+            <name>Tran Phan</name>
+        </developer>
+    </developers>
+
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -123,7 +168,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>ch.uzh.ifi.ase.csccrecommender.Main</mainClass>
+                            <mainClass>com.github.svstoll.csccrecommender.evaluation.CompletionEventEvaluator</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -131,6 +176,7 @@
                     </descriptorRefs>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
 </project>

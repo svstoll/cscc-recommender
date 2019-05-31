@@ -26,14 +26,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CandidateDocumentComparatorTest {
+public class CandidateDocumentComparatorTest {
 
-  CandidateDocumentComparator docCompare1;
-  Double calculatedOverallContextLcsDistance = null;
-  Double calculatedLineContextLevensteihnDistance = null;
+  private CandidateDocumentComparator docCompare1;
 
   @BeforeEach
-  void setUp() {
+  public void setup() {
     Document document1 = mock(Document.class);
     LongPoint a = new LongPoint("a", 712391253);
     LongPoint b = new LongPoint("b", 522593414);
@@ -47,19 +45,19 @@ class CandidateDocumentComparatorTest {
   }
 
   @Test
-  void compareOverallContext_LcsDistanceWasAlreadyCalculated_ReturnTheSameLcsDistanceInSecondCall() {
-    //Calculate distance first time, before it was null
-    calculatedOverallContextLcsDistance = docCompare1.compareOverallContexts("Loren ipsum");
-    //Check distance unchanged in second call
+  public void compareOverallContext_lcsDistanceWasAlreadyCalculated_returnTheSameLcsDistanceInSecondCall() {
+    // Calculate distance first time, before it was null.
+    Double calculatedOverallContextLcsDistance = docCompare1.compareOverallContexts("Loren ipsum");
+    // Check if distance is unchanged in second call.
     assertEquals(calculatedOverallContextLcsDistance, docCompare1.compareOverallContexts("Loren ipsum"));
   }
 
   @Test
-  void compareLineContexts_LevensteihnDistanceWasAlreadyCalculated_ReturnTheSameLevensteihnDistanceInSecondCall() {
-    //Calculate distance first time, before it was null
-    calculatedLineContextLevensteihnDistance = docCompare1.compareLineContexts("Loren ipsum");
-    //Check distance unchanged in second call
-    assertEquals(calculatedLineContextLevensteihnDistance, docCompare1.compareLineContexts("Loren ipsum"));
+  public void compareLineContexts_levensteihnDistanceWasAlreadyCalculated_returnTheSameLevenshteinDistanceInSecondCall() {
+    // Calculate distance first time, before it was null.
+    Double calculatedLineContextLevenshteinDistance = docCompare1
+        .compareLineContexts("Loren ipsum");
+    // Check if distance is unchanged in second call.
+    assertEquals(calculatedLineContextLevenshteinDistance, docCompare1.compareLineContexts("Loren ipsum"));
   }
-
 }

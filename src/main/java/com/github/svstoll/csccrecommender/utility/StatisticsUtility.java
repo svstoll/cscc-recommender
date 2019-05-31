@@ -22,7 +22,11 @@ public class StatisticsUtility {
   }
 
   public static double calculateRecall(int requestedRecommendations, int recommendationsMade) {
-    if (requestedRecommendations <= 0) {
+    if (requestedRecommendations < 0 || recommendationsMade < 0) {
+      throw new IllegalArgumentException("Requested recommendations and recommendations made must not be lower than 0.");
+    }
+
+    if (requestedRecommendations == 0) {
       return 1;
     }
     if (recommendationsMade > requestedRecommendations) {
@@ -33,7 +37,11 @@ public class StatisticsUtility {
   }
 
   public static double calculatePrecision(int recommendationsMade, int relevantRecommendations) {
-    if (recommendationsMade <= 0) {
+    if (recommendationsMade < 0 || relevantRecommendations < 0) {
+      throw new IllegalArgumentException("Recommendation made and relevant recommendations must not be lower than 0.");
+    }
+
+    if (recommendationsMade == 0) {
       return 1;
     }
     if (relevantRecommendations > recommendationsMade) {
@@ -44,7 +52,10 @@ public class StatisticsUtility {
   }
 
   public static double calculateFMeasure(double precision, double recall) {
-    if (precision == 0 && recall == 0) {
+    if (precision < 0 || recall < 0) {
+      throw new IllegalArgumentException("Precision and recall must be greater or equal to 0.");
+    }
+    if (precision <= 0 && recall <= 0) {
       return 0;
     }
     return 2 * precision * recall / (precision + recall);

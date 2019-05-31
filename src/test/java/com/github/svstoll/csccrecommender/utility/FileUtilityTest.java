@@ -65,7 +65,7 @@ public class FileUtilityTest {
   }
 
   @Test
-  public void findAllZipFilePaths_givenSingleZipFileInRootDirectory_shouldReturnEmptyList() throws IOException {
+  public void findAllZipFilePaths_givenSingleZipFileInRootDirectory_shouldReturnSingleZipFile() throws IOException {
     // Given:
     Path testFilePath = Paths.get(tempIndexDirectoryPath.toString(), "test.zip");
     Files.createFile(testFilePath);

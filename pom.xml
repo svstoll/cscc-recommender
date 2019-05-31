@@ -123,7 +123,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>ch.uzh.ifi.ase.csccrecommender.evaluation.CompletionEventEvaluator</mainClass>
+                            <mainClass>com.github.svstoll.csccrecommender.evaluation.CompletionEventEvaluator</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

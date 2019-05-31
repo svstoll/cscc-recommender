@@ -4,6 +4,20 @@
 We implemented the CSCC Recommender in the paper CSCC: Simple, Efficient, Context Sensitive Code Completion, by Muhammad A., Chanchal K., Roy Kevin A., Schneider Daqing H. Then carried out the evaluation using KaVE Context Dataset and KaVE Interaction Dataset, http://www.kave.cc.
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ch.uzh.ifi.ase%3Acscc-recommender&metric=alert_status)](https://sonarcloud.io/dashboard?id=ch.uzh.ifi.ase%3Acscc-recommender)
 
+## Setting up the project
+1. Download KaVE data set from www.kave.cc/datasets. Download the context dataset and put it in ./data/contexts,
+then download the event dataset and put it in ./data/events. Or you can modify the config.properties file corresponding to the
+location of context dataset and event dataset on your machine.
+2. Check com.github.svstoll.csccrecommender.evaluation.CompletionEventEvaluator and run this class to trigger the code completion
+on the event dataset and receive the result as TopK precision as well as some other statistics.
+
+## Future Improvement
+Currently, the model can only recommend for Method. So Future Improvement could be adding recommendations for Property, Field, etc.
+
+## Implementation Difference 
+1. Value to switch between hamming distance for overall and line context not stated in paper.
+2. Droping if normalized distance metric below 0.3 leads to poor recall. So it's removed in the implementation.
+
 ## Evaluation
 In the original paper, the authors focused on two API's, SWT, Swing/AWT. They choose 4 projects for each API. And they gave the evaluations from the following perspective:
 1. Ten-fold cross-validation. Doesn't care if it's cross-project recommendation or within-project recommendation. 

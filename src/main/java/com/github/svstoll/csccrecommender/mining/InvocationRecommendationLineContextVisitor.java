@@ -18,6 +18,7 @@ package com.github.svstoll.csccrecommender.mining;
 
 import com.github.svstoll.csccrecommender.evaluation.ContextEvaluationStatistics;
 import com.github.svstoll.csccrecommender.index.MethodInvocationIndex;
+import com.github.svstoll.csccrecommender.utility.SstUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,14 +38,22 @@ public class InvocationRecommendationLineContextVisitor extends RecommendingLine
 
   @Override
   protected void handleMethodInvocation(String methodName, String invocationType, CsccContext csccContext) {
+    if (!SstUtility.isValidToken(invocationType) || !SstUtility.isValidToken(methodName)) {
+      return;
+    }
+
+    getRecommendationResults().clear();
     super.handleCompletionExpression(invocationType, csccContext);
+    if (getRecommendationResults().isEmpty()) {
+      return;
+    }
 
     List<String> recommendations = getRecommendationResults().get(0).getRecommendedMethods();
     boolean isTop1 = false;
     boolean isTop3 = false;
     boolean isTop10 = false;
     for (int i = 0; i < recommendations.size() && i < 10; i++) {
-      if (recommendations.get(i).equalsIgnoreCase(methodName)) {
+      if (recommendations.get(i).equals(methodName)) {
         isTop10 = true;
         if (i < 1) {
           isTop1 = true;

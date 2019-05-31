@@ -20,29 +20,75 @@ import com.github.svstoll.csccrecommender.utility.StatisticsUtility;
 
 public class ContextEvaluationStatistics {
 
-  private final int totalCases;
-  private final double precision;
-  private final double recall;
+  private int recommendationsRequested = 0;
+  private int recommendationsMade = 0;
+  private int top1Recommendations = 0;
+  private int top3Recommendations = 0;
+  private int top10Recommendations = 0;
 
-  public ContextEvaluationStatistics(int totalCases, double precision, double recall) {
-    this.totalCases = totalCases;
-    this.precision = precision;
-    this.recall = recall;
+  public void update(boolean isRecommendationMade, boolean isTop1, boolean isTop3, boolean isTop10) {
+    recommendationsRequested++;
+    if (!isRecommendationMade) {
+      return;
+    }
+    recommendationsMade++;
+
+    if (isTop1) {
+      top1Recommendations++;
+    }
+    if (isTop3) {
+      top3Recommendations++;
+    }
+    if (isTop10) {
+      top10Recommendations++;
+    }
   }
 
-  public int getTotalCases() {
-    return totalCases;
+  public double calculateRecall() {
+    return StatisticsUtility.calculateRecall(recommendationsRequested, recommendationsMade);
   }
 
-  public double getPrecision() {
-    return precision;
+  public double calculateTop1Precision() {
+    return StatisticsUtility.calculatePrecision(recommendationsMade, top1Recommendations);
   }
 
-  public double getRecall() {
-    return recall;
+  public double calculateTop3Precision() {
+    return StatisticsUtility.calculatePrecision(recommendationsMade, top3Recommendations);
   }
 
-  public double calculateFMeasure() {
-    return StatisticsUtility.calculateFMeasure(precision, recall);
+  public double calculateTop10Precision() {
+    return StatisticsUtility.calculatePrecision(recommendationsMade, top10Recommendations);
+  }
+
+  public double calculateTop1FMeasure() {
+    return StatisticsUtility.calculateFMeasure(calculateTop1Precision(), calculateRecall());
+  }
+
+  public double calculateTop3FMeasure() {
+    return StatisticsUtility.calculateFMeasure(calculateTop3Precision(), calculateRecall());
+  }
+
+  public double calculateTop10FMeasure() {
+    return StatisticsUtility.calculateFMeasure(calculateTop10Precision(), calculateRecall());
+  }
+
+  public int getRecommendationsRequested() {
+    return recommendationsRequested;
+  }
+
+  public int getRecommendationsMade() {
+    return recommendationsMade;
+  }
+
+  public int getTop1Recommendations() {
+    return top1Recommendations;
+  }
+
+  public int getTop3Recommendations() {
+    return top3Recommendations;
+  }
+
+  public int getTop10Recommendations() {
+    return top10Recommendations;
   }
 }

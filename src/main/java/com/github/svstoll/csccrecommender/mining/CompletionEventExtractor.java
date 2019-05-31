@@ -22,10 +22,9 @@ import cc.kave.commons.model.events.completionevents.TerminationState;
 import cc.kave.commons.model.naming.codeelements.IMethodName;
 import cc.kave.commons.utils.io.ReadingArchive;
 import com.github.svstoll.csccrecommender.properties.ConfigProperties;
-import com.google.common.collect.Lists;
+import com.github.svstoll.csccrecommender.utility.FileUtility;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +44,7 @@ public class CompletionEventExtractor {
   }
 
   public void processAllCompletionEvents(CompletionEventExtractionConsumer consumer) {
-    List<String> userZips = findAllUserZipFiles();
+    List<String> userZips = FileUtility.findAllZipFilePaths(eventsDirectory);
 
     for (String zipFilePath : userZips) {
       LOGGER.info("Extracting events from '{}'.", zipFilePath);
@@ -62,14 +61,6 @@ public class CompletionEventExtractor {
 
       consumer.consume(completionEvents);
     }
-  }
-
-  private List<String> findAllUserZipFiles() {
-    List<String> zips = Lists.newLinkedList();
-    for (File f : FileUtils.listFiles(new File(eventsDirectory), new String[] {"zip"}, true)) {
-      zips.add(f.getAbsolutePath());
-    }
-    return zips;
   }
 
   private void identifyCompletionEvent(IIDEEvent event, List<CompletionEvent> completionEvents) {

@@ -28,16 +28,19 @@ import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import static com.github.svstoll.csccrecommender.utility.FileUtility.findAllZipFilePaths;
 
-public class ContextEvaluator {
+public class CrossProjectEvaluator {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ContextEvaluator.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(CrossProjectEvaluator.class);
   private static final String MASKED_FILE_ENDING = ".masked";
 
   private final String contextsDirectoryPath;
@@ -47,7 +50,7 @@ public class ContextEvaluator {
   private final CsccRecommender csccRecommender;
 
   @Inject
-  protected ContextEvaluator(
+  protected CrossProjectEvaluator(
       @Named(ConfigProperties.CONTEXTS_DIRECTORY_PROPERTY) String contextsDirectoryPath,
       @Named(ConfigProperties.RESULTS_DIRECTORY_PROPERTY) String resultsDirectoryPath,
       MethodInvocationIndex methodInvocationIndex,
@@ -60,16 +63,14 @@ public class ContextEvaluator {
     this.csccRecommender = csccRecommender;
   }
 
-  public static void main(String[] args) throws IOException {
-    LOGGER.info("Starting evaluation of completion events.");
+  public static void main(String[] args) {
+    LOGGER.info("Starting context based evaluation.");
     Injector injector = Guice.createInjector(new ProductionModule());
-    ContextEvaluator evaluator = injector.getInstance(ContextEvaluator.class);
-    Path tempDirectory = Files.createTempDirectory("context-evaluation");
-
-    evaluator.trainAndEvaluateOnContextDataset(2, tempDirectory.toString());
+    CrossProjectEvaluator evaluator = injector.getInstance(CrossProjectEvaluator.class);
+    evaluator.trainAndEvaluateOnContextDataset(2);
   }
 
-  public void trainAndEvaluateOnContextDataset(int splits, String tempEvaluationResultsDirectoryPath) {
+  public void trainAndEvaluateOnContextDataset(int splits) {
     methodInvocationIndex.clearIndex();
     List<String[]> groups;
     try {
@@ -94,10 +95,11 @@ public class ContextEvaluator {
       }
       maskedFiles.addAll(maskZipFiles(groups.get(j)));
     }
-    csccRecommender.recommendForAllInvocationsInAvailableContexts(tempEvaluationResultsDirectoryPath);
+    ContextEvaluationStatistics statistics = new ContextEvaluationStatistics();
+    csccRecommender.recommendForAllInvocationsInAvailableContexts(statistics);
 
     unmaskZipFiles(maskedFiles);
-    writeEvaluationResults(tempEvaluationResultsDirectoryPath);
+    writeEvaluationResults(statistics);
   }
 
   private List<String[]> splitContextDataset(int splits) {
@@ -125,8 +127,8 @@ public class ContextEvaluator {
 
   private List<String> maskZipFiles(String[] toBeMasked) {
     ArrayList<String> maskedZips = new ArrayList<>();
-    for (String s : toBeMasked) {
-      List<String> zips = findAllZipFilePaths(contextsDirectoryPath + "/" + s);
+    for (String zipFile : toBeMasked) {
+      List<String> zips = findAllZipFilePaths(Paths.get(contextsDirectoryPath, zipFile).toString());
       for (String zip : zips) {
         File file = new File(zip);
 
@@ -151,57 +153,31 @@ public class ContextEvaluator {
     }
   }
 
-  private void writeEvaluationResults(String tempEvaluationResultsDirectoryPath) {
-    int[] requestedMaxRecommendations = {1, 3, 10};
+  private void writeEvaluationResults(ContextEvaluationStatistics statistics) {
     File resultsDirectory = new File(resultsDirectoryPath);
     if (!resultsDirectory.exists()) {
       resultsDirectory.mkdirs();
     }
+    Path resultsFilePath = Paths.get(resultsDirectoryPath, "cross-project-evaluation-" + System.currentTimeMillis() + ".txt");
+    try (PrintWriter pw = new PrintWriter(new FileWriter(resultsFilePath.toFile()))) {
+      pw.println("Requested recommendations: " + statistics.getRecommendationsRequested());
+      pw.println("Recommendations made: " + statistics.getRecommendationsMade());
+      pw.println("Overall recall: " + statistics.calculateRecall());
+      pw.println();
+      pw.println("Top-1 precision: " + statistics.calculateTop1Precision());
+      pw.println("Top-1 F-measure: " + statistics.calculateTop1FMeasure());
+      pw.println();
+      pw.println("Top-3 precision: " + statistics.calculateTop3Precision());
+      pw.println("Top-3 F-measure: " + statistics.calculateTop3FMeasure());
+      pw.println();
+      pw.println("Top-10 precision: " + statistics.calculateTop10Precision());
+      pw.println("Top-10 F-measure: " + statistics.calculateTop10FMeasure());
+      pw.println();
 
-    String resultsFileName = resultsDirectoryPath + "/" + "cross-validation-result-" + System.currentTimeMillis() + ".txt";
-    try (PrintWriter pw = new PrintWriter(new FileWriter(resultsFileName))) {
-      for (int maxRecommendations : requestedMaxRecommendations) {
-        ContextEvaluationStatistics statistics = calculateStatistics(maxRecommendations, tempEvaluationResultsDirectoryPath);
-        pw.println("Maximum Recommendations = " + maxRecommendations);
-        pw.println("\tTotal cases: " + statistics.getTotalCases());
-        pw.println("\tPrecision: " + statistics.getPrecision());
-        pw.println("\tRecall: " + statistics.getRecall());
-        pw.println("\tF-measure: " + statistics.calculateFMeasure());
-        pw.println();
-      }
+      LOGGER.info("Evaluation finished. The results have been saved to '{}'.", resultsFilePath);
     }
     catch (IOException e) {
       LOGGER.info("Error writing context evaluation results.", e);
-    }
-  }
-
-  public ContextEvaluationStatistics calculateStatistics(int recommendations, String tempEvaluationResultsDirectoryPath) throws IOException {
-    try (BufferedReader in = new BufferedReader(
-        new FileReader(tempEvaluationResultsDirectoryPath + "/" + recommendations + "/results.txt"))) {
-      String line;
-      double madeAndRelevant = 0;
-      double made = 0;
-      int requested = 0;
-      while ((line = in.readLine()) != null) {
-        String[] result = line.split(",");
-        requested += 1;
-        if (Double.parseDouble(result[0]) > 0) {
-          madeAndRelevant += 1.0;
-        }
-        if (Double.parseDouble(result[1]) > 0) {
-          made += 1;
-        }
-      }
-      double precision = 0;
-      if (made != 0) {
-        precision = madeAndRelevant / made;
-      }
-      double recall = 0;
-      if (requested != 0) {
-        recall = made / requested;
-      }
-
-      return new ContextEvaluationStatistics(requested, precision, recall);
     }
   }
 }

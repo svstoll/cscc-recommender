@@ -19,16 +19,14 @@ package com.github.svstoll.csccrecommender.recommender;
 import cc.kave.commons.model.events.completionevents.CompletionEvent;
 import cc.kave.commons.model.events.completionevents.Context;
 import cc.kave.commons.model.naming.codeelements.IMethodName;
+import com.github.svstoll.csccrecommender.evaluation.ContextEvaluationStatistics;
 import com.github.svstoll.csccrecommender.index.MethodInvocationIndex;
 import com.github.svstoll.csccrecommender.mining.*;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,18 +58,11 @@ public class CsccRecommender {
     return recommendingLineContextVisitor.getRecommendationResults();
   }
 
-  public void recommendForAllInvocationsInAvailableContexts(String tempEvaluationResultsDirectoryPath) {
-    try {
-      FileUtils.deleteDirectory(new File(tempEvaluationResultsDirectoryPath));
-    }
-    catch (IOException e) {
-      LOGGER.info("Error while clearing the tmp evaluation results folder.", e);
-    }
-
+  public void recommendForAllInvocationsInAvailableContexts(ContextEvaluationStatistics contextEvaluationStatistics) {
     contextExtractor.processAllContexts(contexts -> {
-      LOGGER.info("Perform recommendations for all method invocations in current contexts.");
+      LOGGER.info("Performing recommendation for all method invocations within {} contexts.", contexts.size());
       InvocationRecommendationLineContextVisitor invocationRecommendationLineContextVisitor
-          = new InvocationRecommendationLineContextVisitor(methodInvocationIndex, tempEvaluationResultsDirectoryPath);
+          = new InvocationRecommendationLineContextVisitor(methodInvocationIndex, contextEvaluationStatistics);
       for (Context context : contexts) {
         context.getSST().accept(new CsccContextVisitor(), new CsccContext(invocationRecommendationLineContextVisitor));
       }

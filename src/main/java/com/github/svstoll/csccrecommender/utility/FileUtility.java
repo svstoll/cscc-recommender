@@ -19,7 +19,6 @@ package com.github.svstoll.csccrecommender.utility;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
@@ -31,7 +30,7 @@ public class FileUtility {
   }
 
   public static List<String> findAllZipFilePaths(String directoryPath) {
-    if (StringUtility.isNullOrEmpty(directoryPath) || !Files.exists(Paths.get(directoryPath))) {
+    if (StringUtility.isNullOrEmpty(directoryPath) || !Paths.get(directoryPath).toFile().exists()) {
       return Collections.emptyList();
     }
 

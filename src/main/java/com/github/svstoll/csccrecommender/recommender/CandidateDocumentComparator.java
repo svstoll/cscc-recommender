@@ -37,6 +37,7 @@ public class CandidateDocumentComparator {
         long lineContextSimHash = (long) candidateDocument.getField(MethodInvocationDocumentBuilder.LINE_CONTEXT_SIM_HASH_FIELD).numericValue();
         long overallContextHammingDistance = Util.hammingDistance(overallContextSimHash, overallContextSimHashForProposal);
         long lineContextHammingDistance = Util.hammingDistance(lineContextSimHash, lineContextSimHashForProposal);
+
         // Use overall hamming distance unless hamming distance of line context exceeds predefined threshold.
         if (lineContextHammingDistance > LINE_CONTEXT_SWITCH_THRESHOLD) {
             this.hammingDistanceForComparison = lineContextHammingDistance;

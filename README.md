@@ -1,8 +1,6 @@
 # CSCC Recommender
 
 
-### Evaluation
-
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ch.uzh.ifi.ase%3Acscc-recommender&metric=alert_status)](https://sonarcloud.io/dashboard?id=ch.uzh.ifi.ase%3Acscc-recommender)
 
 ### Evaluation
@@ -13,7 +11,7 @@ In the original paper, the authors focused on two API's, SWT, Swing/AWT. They ch
 4. Will target methods called from within extension methods impose any challenge to the code completion techniques?
 5. Indexing time and code completion time.
 6. CSCC can capture context, so will different types context give different result?
-7. What about cross-project recommendation?
+7. What about cross-project recommendation? <br>
 Their evaluation can mostly be categorized as static analysis, since the projects they use are already finished. So it's very different from the real cases.
 In comparison, the KaVE Context Dataset is much bigger, containing 309 projects, and KaVE Interaction Dataset is real world cases, recorded from daily usage of the developers. So we can carry out much bigger analysis and try to see what the result will be if this is deployed, not just simulation results.
 In summary, we carried out:

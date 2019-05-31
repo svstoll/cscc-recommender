@@ -1,9 +1,10 @@
 # CSCC Recommender
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ch.uzh.ifi.ase%3Acscc-recommender&metric=alert_status)](https://sonarcloud.io/dashboard?id=ch.uzh.ifi.ase%3Acscc-recommender)
+
 CSCC Recommender. A code completion system based on a work of Asaduzzaman, Muhammad, et al
 [CSCC: Simple, Efficient, Context Sensitive Code Completion](https://ieeexplore.ieee.org/document/6976073/)
 
-##Setting up the project
+## Setting up the project
 
 1. Download KaVE data set from www.kave.cc/datasets. Download the context dataset and put it in ./data/contexts,
 then download the event dataset and put it in ./data/events. Or you can modify the config.properties file corresponding to the

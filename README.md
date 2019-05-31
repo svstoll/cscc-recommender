@@ -1,4 +1,5 @@
 # CSCC Recommender
+[![Maven Central](https://maven-badges-generator.herokuapp.com/maven-central/com.github.svstoll/cscc-recommender/badge.svg)](https://maven-badges-generator.herokuapp.com/maven-central/com.github.svstoll/cscc-recommender)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ch.uzh.ifi.ase%3Acscc-recommender&metric=alert_status)](https://sonarcloud.io/dashboard?id=ch.uzh.ifi.ase%3Acscc-recommender)
 
 ## Introduction
@@ -28,7 +29,7 @@ You can add this implementation of the CSCC recommender as a Apache Maven depend
     <dependency>
         <groupId>com.github.svstoll</groupId>
         <artifactId>cscc-recommender</artifactId>
-        <version>1.0</version>
+        <version>1.0.0</version>
     </dependency>
 </dependencies>
 ```
